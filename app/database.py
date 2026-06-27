@@ -5,7 +5,29 @@ SQLite + all table definitions + helper queries
 import sqlite3, os, hashlib, secrets
 from datetime import datetime, timedelta
 
-DB_PATH = os.environ.get("DB_PATH", "/tmp/waseet.db")
+def _resolve_db_path():
+    candidates = [
+        os.environ.get("DB_PATH"),
+        "/tmp/waseet.db",
+        "/var/tmp/waseet.db",
+        os.path.join(os.path.expanduser("~"), "waseet.db"),
+    ]
+    for path in candidates:
+        if not path:
+            continue
+        try:
+            directory = os.path.dirname(os.path.abspath(path))
+            os.makedirs(directory, exist_ok=True)
+            # Test write access
+            conn = sqlite3.connect(path)
+            conn.close()
+            print(f"[DB] Using database at: {path}", flush=True)
+            return path
+        except Exception as e:
+            print(f"[DB] Cannot use {path}: {e}", flush=True)
+    raise RuntimeError("Cannot find a writable path for the database")
+
+DB_PATH = _resolve_db_path()
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
