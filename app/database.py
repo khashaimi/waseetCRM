@@ -2,7 +2,7 @@
 Waseet CRM — Database Layer
 SQLite + all table definitions + helper queries
 """
-import sqlite3, os, bcrypt
+import sqlite3, os, hashlib, secrets
 from datetime import datetime, timedelta
 
 DB_PATH = os.environ.get("DB_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "waseet.db"))
@@ -129,7 +129,8 @@ def create_agency_and_user(agency_name, name, email, password, phone=""):
         c.execute("INSERT INTO agencies (name, plan, trial_ends) VALUES (?,?,?)",
                   (agency_name, "trial", trial_ends))
         agency_id = c.lastrowid
-        pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        _salt = secrets.token_hex(16)
+        pw_hash = "pbkdf2:" + _salt + ":" + hashlib.pbkdf2_hmac("sha256", password.encode(), _salt.encode(), 260000).hex()
         c.execute("""INSERT INTO users (agency_id, name, email, password_hash, phone, role)
                      VALUES (?,?,?,?,?,?)""",
                   (agency_id, name, email, pw_hash, phone, "admin"))
@@ -148,7 +149,11 @@ def get_user_by_email(email):
         conn.close()
 
 def check_password(stored_hash, password):
-    return bcrypt.checkpw(password.encode(), stored_hash.encode())
+    try:
+        _, _salt, _hx = stored_hash.split(":")
+        return hashlib.pbkdf2_hmac("sha256", password.encode(), _salt.encode(), 260000).hex() == _hx
+    except Exception:
+        return False
 
 # ── STATS ─────────────────────────────────────────────────────────────────────
 
@@ -441,7 +446,8 @@ def invite_agent(agency_id, name, email, phone=""):
     try:
         # Default password = phone or "Waseet123"
         default_pw = phone if phone else "Waseet123"
-        pw_hash = bcrypt.hashpw(default_pw.encode(), bcrypt.gensalt()).decode()
+        _salt = secrets.token_hex(16)
+        pw_hash = "pbkdf2:" + _salt + ":" + hashlib.pbkdf2_hmac("sha256", default_pw.encode(), _salt.encode(), 260000).hex()
         c = conn.cursor()
         c.execute("""INSERT INTO users (agency_id,name,email,password_hash,phone,role)
                      VALUES (?,?,?,?,?,?)""",

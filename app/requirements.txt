@@ -1,0 +1,1 @@
+# No external dependencies — Waseet CRM uses Python stdlib only

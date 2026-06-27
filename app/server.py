@@ -4,14 +4,13 @@ Run: python server.py
 API: http://localhost:8000/api/...
 App: http://localhost:8000/
 """
-import json, os, sys, re, traceback
+import json, os, sys, re, traceback, hmac, hashlib, base64
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-import jwt
 from datetime import datetime, timedelta, timezone
 import database as db
 
-SECRET = os.environ.get("JWT_SECRET", "waseet-secret-change-in-production-2026")
+SECRET = os.environ.get("JWT_SECRET", "waseet-secret-change-in-production-2026").encode()
 PORT   = int(os.environ.get("PORT", 8000))
 PUBLIC = os.path.join(os.path.dirname(__file__), "public")
 
@@ -25,20 +24,32 @@ MIME = {
     ".json": "application/json",
 }
 
-# ── JWT helpers ───────────────────────────────────────────────────────────────
+# ── JWT helpers (stdlib only — no PyJWT needed) ───────────────────────────────
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+def _b64url_dec(s: str) -> bytes:
+    s += "=" * (-len(s) % 4)
+    return base64.urlsafe_b64decode(s)
 
 def make_token(user_id, agency_id, role):
-    payload = {
-        "sub": user_id,
-        "agency": agency_id,
-        "role": role,
-        "exp": datetime.now(tz=timezone.utc) + timedelta(days=7)
-    }
-    return jwt.encode(payload, SECRET, algorithm="HS256")
+    header  = _b64url(json.dumps({"alg":"HS256","typ":"JWT"}).encode())
+    exp     = int((datetime.now(tz=timezone.utc) + timedelta(days=7)).timestamp())
+    payload = _b64url(json.dumps({"sub": user_id, "agency": agency_id, "role": role, "exp": exp}).encode())
+    sig     = _b64url(hmac.new(SECRET, f"{header}.{payload}".encode(), hashlib.sha256).digest())
+    return f"{header}.{payload}.{sig}"
 
 def decode_token(token):
     try:
-        return jwt.decode(token, SECRET, algorithms=["HS256"])
+        header, payload, sig = token.split(".")
+        expected = _b64url(hmac.new(SECRET, f"{header}.{payload}".encode(), hashlib.sha256).digest())
+        if not hmac.compare_digest(sig, expected):
+            return None
+        claims = json.loads(_b64url_dec(payload))
+        if claims.get("exp", 0) < datetime.now(tz=timezone.utc).timestamp():
+            return None
+        return claims
     except Exception:
         return None
 
