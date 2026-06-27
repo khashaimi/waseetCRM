@@ -183,6 +183,10 @@ class CRMHandler(BaseHTTPRequestHandler):
             elif method == "DELETE" and re.match(r"^/api/followups/\d+$", path):
                 self.handle_delete_followup(int(path.split("/")[-1]))
 
+            # PROFILE
+            elif method == "PUT" and path == "/api/profile":
+                self.handle_update_profile()
+
             # TEAM
             elif method == "GET" and path == "/api/team":
                 self.handle_list_team()
@@ -440,6 +444,18 @@ class CRMHandler(BaseHTTPRequestHandler):
             return
         db.delete_followup(followup_id, claims["agency"])
         self.send_json({"message": "تم الحذف"})
+
+    # ── PROFILE ──────────────────────────────────────────────────────────────
+
+    def handle_update_profile(self):
+        claims = self.require_auth()
+        if not claims:
+            return
+        data = self.read_json()
+        ok, msg = db.update_profile(claims["sub"], data)
+        if not ok:
+            return self.send_error_json(msg, 400)
+        self.send_json({"message": msg})
 
     # ── TEAM ─────────────────────────────────────────────────────────────────
 

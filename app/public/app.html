@@ -1,129 +1,145 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>وسيط CRM</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<title>Waseet CRM | وسيط</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --blue:#1B4F8C;--blue-d:#133a68;--blue-l:#D6E4F5;
   --green:#1D7A4E;--green-l:#D6EDE0;
   --red:#DC2626;--red-l:#FEE2E2;
   --orange:#D97706;--orange-l:#FEF3C7;
-  --text:#1A1A1A;--gray:#6B7280;--border:#E5E7EB;
-  --bg:#F3F6FB;--white:#fff;
-  --sidebar:240px;--radius:12px;
+  --text:#1A1A1A;--text-2:#6B7280;
+  --border:#E5E7EB;--bg:#F3F6FB;--card:#fff;
+  --sidebar-bg:#1B4F8C;--topbar-bg:#fff;
   --shadow:0 2px 12px rgba(27,79,140,.10);
+  --input-bg:#fff;--sidebar:240px;--radius:12px;
 }
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+[data-theme="dark"]{
+  --text:#E8EFFE;--text-2:#9CA3AF;
+  --border:#253047;--bg:#0F1929;--card:#172030;
+  --sidebar-bg:#0d1a2d;--topbar-bg:#172030;
+  --shadow:0 2px 16px rgba(0,0,0,.35);--input-bg:#1f2d42;
+  --blue-l:#1a2d47;--green-l:#0e2218;--red-l:#2d1212;--orange-l:#2d1e08;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{transition:background .25s,color .25s}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);font-size:15px;transition:background .25s,color .25s}
+[lang="en"] body,[lang="en"] input,[lang="en"] button,[lang="en"] select,[lang="en"] textarea{font-family:'Inter',sans-serif}
 a{text-decoration:none;color:inherit}
-button{font-family:'Cairo',sans-serif;cursor:pointer;border:none;outline:none}
-input,select,textarea{font-family:'Cairo',sans-serif;font-size:15px}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input,select,textarea{font-family:inherit;font-size:15px}
 
-/* ── LAYOUT ── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(-10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.page-enter{animation:fadeInUp .28s ease both}
+.page-enter>*{animation:fadeInUp .32s ease both}
+.page-enter>*:nth-child(1){animation-delay:.05s}
+.page-enter>*:nth-child(2){animation-delay:.1s}
+.page-enter>*:nth-child(3){animation-delay:.15s}
+.page-enter>*:nth-child(4){animation-delay:.2s}
+.page-enter>*:nth-child(5){animation-delay:.25s}
+.page-enter>*:nth-child(6){animation-delay:.3s}
+
 #app{display:flex;min-height:100vh}
 #sidebar{
   width:var(--sidebar);min-width:var(--sidebar);
-  background:var(--blue);color:#fff;
+  background:var(--sidebar-bg);color:#fff;
   display:flex;flex-direction:column;
   position:fixed;top:0;right:0;bottom:0;z-index:50;
-  overflow-y:auto;
+  overflow-y:auto;transition:background .25s,right .3s;
 }
+[dir="ltr"] #sidebar{right:auto;left:0}
 #main{margin-right:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh}
+[dir="ltr"] #main{margin-right:0;margin-left:var(--sidebar)}
 #topbar{
-  background:var(--white);border-bottom:1px solid var(--border);
+  background:var(--topbar-bg);border-bottom:1px solid var(--border);
   padding:0 24px;height:60px;
   display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:40;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);transition:background .25s;
 }
 #content{padding:28px;flex:1}
 
-/* ── SIDEBAR ── */
-.sidebar-logo{
-  padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.12);
-  display:flex;align-items:center;gap:10px;
-}
-.sidebar-logo .icon{
-  width:36px;height:36px;background:rgba(255,255,255,.18);
-  border-radius:8px;display:flex;align-items:center;justify-content:center;
-  font-weight:900;font-size:18px;
-}
-.sidebar-logo .name{font-size:18px;font-weight:700}
+.sidebar-logo{padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.12);display:flex;align-items:center;gap:10px}
+.sidebar-logo .icon{width:38px;height:38px;background:rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;flex-shrink:0}
+.sidebar-logo .name{font-size:17px;font-weight:700}
 .sidebar-logo .sub{font-size:11px;opacity:.6;margin-top:2px}
 
 nav.sidebar-nav{padding:12px 0;flex:1}
 .nav-item{
-  display:flex;align-items:center;gap:12px;
-  padding:12px 20px;font-size:14px;font-weight:600;
-  color:rgba(255,255,255,.75);cursor:pointer;
-  border-right:3px solid transparent;
-  transition:all .15s;
+  display:flex;align-items:center;gap:12px;padding:12px 20px;
+  font-size:14px;font-weight:600;color:rgba(255,255,255,.75);cursor:pointer;
+  border-right:3px solid transparent;transition:all .18s;
 }
-.nav-item:hover,.nav-item.active{
-  color:#fff;background:rgba(255,255,255,.1);
-  border-right-color:#6EE7A0;
-}
-.nav-item .ico{font-size:18px;width:22px;text-align:center}
-.nav-badge{
-  margin-right:auto;background:#EF4444;color:#fff;
-  font-size:11px;font-weight:700;padding:2px 7px;border-radius:50px;min-width:20px;text-align:center;
-}
+[dir="ltr"] .nav-item{border-right:none;border-left:3px solid transparent}
+.nav-item:hover,.nav-item.active{color:#fff;background:rgba(255,255,255,.1);border-right-color:#6EE7A0}
+[dir="ltr"] .nav-item:hover,[dir="ltr"] .nav-item.active{border-right-color:transparent;border-left-color:#6EE7A0}
+.nav-item .ico{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+.nav-badge{margin-right:auto;background:#EF4444;color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:50px;min-width:20px;text-align:center}
+[dir="ltr"] .nav-badge{margin-right:0;margin-left:auto}
 
-.sidebar-footer{
-  padding:16px;border-top:1px solid rgba(255,255,255,.12);
-  font-size:13px;color:rgba(255,255,255,.55);
-}
-.trial-bar{
-  background:rgba(255,200,0,.15);border:1px solid rgba(255,200,0,.3);
-  border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;
-  color:rgba(255,255,255,.85);
-}
+.sidebar-footer{padding:16px;border-top:1px solid rgba(255,255,255,.12);font-size:13px;color:rgba(255,255,255,.55)}
+.trial-bar{background:rgba(255,200,0,.15);border:1px solid rgba(255,200,0,.3);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:rgba(255,255,255,.85)}
 
-/* ── TOPBAR ── */
 .page-title{font-size:20px;font-weight:700;color:var(--blue)}
-.topbar-right{display:flex;align-items:center;gap:12px}
-.user-chip{
-  display:flex;align-items:center;gap:8px;
-  background:var(--bg);border-radius:8px;padding:6px 12px;font-size:14px;
+.topbar-right{display:flex;align-items:center;gap:10px}
+.icon-btn{
+  width:36px;height:36px;border-radius:8px;background:transparent;
+  border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;transition:all .15s;color:var(--text);
 }
+.icon-btn:hover{background:var(--bg);border-color:var(--blue)}
+.user-chip{
+  display:flex;align-items:center;gap:8px;background:var(--bg);
+  border-radius:8px;padding:5px 12px 5px 8px;font-size:14px;cursor:pointer;
+  transition:all .15s;border:1.5px solid transparent;
+}
+[dir="ltr"] .user-chip{padding:5px 8px 5px 12px}
+.user-chip:hover{border-color:var(--blue)}
 .avatar{
   width:32px;height:32px;border-radius:50%;
   background:linear-gradient(135deg,var(--blue),var(--green));
   color:#fff;display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:700;
+  font-size:14px;font-weight:700;flex-shrink:0;
 }
+.lang-pill{
+  font-size:12px;font-weight:700;padding:5px 10px;border-radius:20px;
+  border:1.5px solid var(--border);cursor:pointer;transition:all .15s;
+  background:transparent;color:var(--text);
+}
+.lang-pill:hover{border-color:var(--blue);color:var(--blue)}
 
-/* ── CARDS / GRIDS ── */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:16px;margin-bottom:28px}
 .stat-card{
-  background:var(--white);border-radius:var(--radius);padding:20px;
+  background:var(--card);border-radius:var(--radius);padding:20px;
   border:1px solid var(--border);box-shadow:var(--shadow);
   display:flex;flex-direction:column;gap:6px;
+  transition:transform .2s,box-shadow .2s,background .25s;cursor:default;
 }
-.stat-card .label{font-size:13px;color:var(--gray);font-weight:600}
-.stat-card .value{font-size:32px;font-weight:900;color:var(--blue)}
-.stat-card .icon{font-size:28px}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(27,79,140,.15)}
+.stat-card .label{font-size:13px;color:var(--text-2);font-weight:600}
+.stat-card .value{font-size:30px;font-weight:900;color:var(--blue)}
+.stat-card .icon{font-size:26px}
 .stat-card.green .value{color:var(--green)}
 .stat-card.orange .value{color:var(--orange)}
 .stat-card.red .value{color:var(--red)}
 
-.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow)}
+.card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);transition:background .25s,border-color .25s}
 .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .card-header h3{font-size:16px;font-weight:700;color:var(--blue)}
 .card-body{padding:20px}
 
-/* ── BUTTONS ── */
-.btn{
-  padding:9px 18px;border-radius:8px;font-size:14px;font-weight:700;
-  font-family:'Cairo',sans-serif;cursor:pointer;border:none;
-  display:inline-flex;align-items:center;gap:6px;transition:all .15s;
-}
+.btn{padding:9px 18px;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:all .18s;white-space:nowrap}
 .btn-primary{background:var(--blue);color:#fff}
-.btn-primary:hover{background:var(--blue-d)}
+.btn-primary:hover{background:var(--blue-d);transform:translateY(-1px)}
 .btn-green{background:var(--green);color:#fff}
-.btn-green:hover{background:#145c39}
+.btn-green:hover{background:#145c39;transform:translateY(-1px)}
 .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
 .btn-outline:hover{border-color:var(--blue);color:var(--blue)}
 .btn-danger{background:var(--red-l);color:var(--red)}
@@ -131,244 +147,197 @@ nav.sidebar-nav{padding:12px 0;flex:1}
 .btn-sm{padding:6px 12px;font-size:13px}
 .btn-icon{width:34px;height:34px;padding:0;justify-content:center;border-radius:8px}
 
-/* ── TABLES ── */
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{font-size:13px;font-weight:700;color:var(--gray);padding:10px 14px;text-align:right;border-bottom:2px solid var(--border);white-space:nowrap}
-td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle}
-tr:hover td{background:#f9fafc}
+th{font-size:13px;font-weight:700;color:var(--text-2);padding:10px 14px;text-align:right;border-bottom:2px solid var(--border);white-space:nowrap}
+[dir="ltr"] th{text-align:left}
+td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle;color:var(--text)}
+tr:hover td{background:var(--bg)}
 tr:last-child td{border-bottom:none}
 
-/* ── BADGES ── */
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:50px;font-size:12px;font-weight:700;white-space:nowrap}
 .badge-blue{background:var(--blue-l);color:var(--blue)}
 .badge-green{background:var(--green-l);color:var(--green)}
 .badge-red{background:var(--red-l);color:var(--red)}
 .badge-orange{background:var(--orange-l);color:var(--orange)}
-.badge-gray{background:#F3F4F6;color:var(--gray)}
+.badge-gray{background:var(--border);color:var(--text-2)}
 
-/* ── FORMS ── */
-.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
 .form-group{display:flex;flex-direction:column;gap:6px}
-.form-group label{font-size:13px;font-weight:700;color:var(--gray)}
+.form-group label{font-size:13px;font-weight:700;color:var(--text-2)}
 .form-group input,.form-group select,.form-group textarea{
-  border:1.5px solid var(--border);border-radius:8px;
-  padding:9px 12px;font-size:14px;color:var(--text);
-  transition:border .15s;background:var(--white);
+  border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;
+  font-size:14px;color:var(--text);background:var(--input-bg);transition:border .15s,background .25s;
 }
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
-  outline:none;border-color:var(--blue);
-}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--blue)}
 .form-group textarea{resize:vertical;min-height:80px}
 .form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
 
-/* ── MODAL ── */
 .modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  position:fixed;inset:0;background:rgba(0,0,0,.5);
   display:none;align-items:center;justify-content:center;z-index:200;
-  padding:20px;
+  padding:20px;backdrop-filter:blur(3px);
 }
-.modal-overlay.open{display:flex}
+.modal-overlay.open{display:flex;animation:fadeIn .2s ease}
 .modal{
-  background:var(--white);border-radius:16px;width:100%;max-width:560px;
-  max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);
+  background:var(--card);border-radius:16px;width:100%;max-width:560px;
+  max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.25);
+  animation:modalIn .22s ease both;
 }
 .modal-header{
   padding:20px 24px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;background:var(--white);z-index:10;
+  position:sticky;top:0;background:var(--card);z-index:10;
 }
 .modal-header h2{font-size:18px;font-weight:700;color:var(--blue)}
-.modal-close{font-size:22px;color:var(--gray);cursor:pointer;padding:4px 8px;border-radius:6px}
+.modal-close{font-size:20px;color:var(--text-2);cursor:pointer;padding:4px 8px;border-radius:6px;transition:.15s}
 .modal-close:hover{background:var(--border)}
 .modal-body{padding:24px}
 
-/* ── KANBAN ── */
 .kanban-wrap{overflow-x:auto;padding-bottom:20px}
 .kanban{display:flex;gap:16px;align-items:flex-start;min-width:max-content}
-.kanban-col{
-  width:260px;background:var(--bg);border-radius:var(--radius);
-  border:1px solid var(--border);flex-shrink:0;
-}
-.kanban-col-header{
-  padding:12px 16px;font-size:14px;font-weight:700;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  border-radius:var(--radius) var(--radius) 0 0;
-}
+.kanban-col{width:260px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border);flex-shrink:0;transition:border-color .2s}
+.kanban-col-header{padding:12px 16px;font-size:14px;font-weight:700;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;border-radius:var(--radius) var(--radius) 0 0}
 .kanban-col-body{padding:10px;min-height:200px;display:flex;flex-direction:column;gap:8px}
 .kanban-card{
-  background:var(--white);border-radius:10px;border:1px solid var(--border);
-  padding:14px;cursor:grab;transition:box-shadow .15s;
+  background:var(--card);border-radius:10px;border:1px solid var(--border);
+  padding:14px;cursor:grab;transition:box-shadow .2s,transform .15s;
 }
-.kanban-card:hover{box-shadow:var(--shadow)}
-.kanban-card.dragging{opacity:.5;cursor:grabbing}
+.kanban-card:hover{box-shadow:0 4px 16px rgba(27,79,140,.15);transform:translateY(-2px)}
+.kanban-card.dragging{opacity:.45;cursor:grabbing;transform:rotate(2deg)}
 .kanban-col.drag-over .kanban-col-body{background:var(--blue-l)}
 .kanban-card h4{font-size:14px;font-weight:700;margin-bottom:6px;color:var(--text)}
-.kanban-card .meta{font-size:12px;color:var(--gray);display:flex;flex-direction:column;gap:3px}
-.kanban-card .value-tag{
-  margin-top:8px;font-size:13px;font-weight:700;color:var(--green);
-}
+.kanban-card .meta{font-size:12px;color:var(--text-2);display:flex;flex-direction:column;gap:3px}
+.kanban-card .value-tag{margin-top:8px;font-size:13px;font-weight:700;color:var(--green)}
 
-/* ── EMPTY STATES ── */
-.empty{text-align:center;padding:60px 20px;color:var(--gray)}
+.empty{text-align:center;padding:60px 20px;color:var(--text-2)}
 .empty .emoji{font-size:48px;margin-bottom:12px}
 .empty h3{font-size:17px;font-weight:700;margin-bottom:6px;color:var(--text)}
 .empty p{font-size:14px}
 
-/* ── SEARCH BAR ── */
-.search-bar{
-  display:flex;gap:10px;align-items:center;
-  margin-bottom:20px;flex-wrap:wrap;
-}
+.search-bar{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
 .search-input-wrap{position:relative;flex:1;min-width:200px}
-.search-input-wrap input{width:100%;padding:9px 14px 9px 36px;border:1.5px solid var(--border);border-radius:8px;font-size:14px}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--gray)}
+.search-input-wrap input{width:100%;padding:9px 14px 9px 36px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:var(--card);color:var(--text)}
+[dir="rtl"] .search-input-wrap input{padding:9px 36px 9px 14px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text-2)}
+[dir="rtl"] .search-icon{left:auto;right:10px}
 
-/* ── DASHBOARD SPLIT ── */
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 @media(max-width:900px){.dash-grid{grid-template-columns:1fr}}
-.followup-item{
-  display:flex;align-items:center;gap:12px;padding:12px 0;
-  border-bottom:1px solid var(--border);
-}
+.followup-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
 .followup-item:last-child{border-bottom:none}
-.followup-item .name{font-weight:700;font-size:14px}
-.followup-item .note{font-size:12px;color:var(--gray)}
-.followup-item .date{font-size:11px;color:var(--orange);margin-top:2px;font-weight:600}
 .contact-row-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
 .contact-row-item:last-child{border-bottom:none}
 
-/* ── PROPERTIES GRID ── */
 .prop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
-.prop-card{
-  background:var(--white);border-radius:var(--radius);border:1px solid var(--border);
-  overflow:hidden;box-shadow:var(--shadow);
-}
-.prop-thumb{
-  height:140px;background:linear-gradient(135deg,var(--blue-l),#c5d8f5);
-  display:flex;align-items:center;justify-content:center;font-size:48px;
-}
+.prop-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
+.prop-card:hover{transform:translateY(-4px);box-shadow:0 8px 28px rgba(27,79,140,.18)}
+.prop-thumb{height:140px;background:linear-gradient(135deg,var(--blue-l),#c5d8f5);display:flex;align-items:center;justify-content:center;font-size:48px}
 .prop-body{padding:16px}
-.prop-title{font-size:15px;font-weight:700;margin-bottom:6px}
+.prop-title{font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text)}
 .prop-price{font-size:20px;font-weight:900;color:var(--green);margin-bottom:8px}
-.prop-meta{font-size:12px;color:var(--gray);display:flex;flex-wrap:wrap;gap:8px}
+.prop-meta{font-size:12px;color:var(--text-2);display:flex;flex-wrap:wrap;gap:8px}
 .prop-actions{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px}
 
-/* ── TEAM ── */
-.agent-card{
-  background:var(--white);border-radius:var(--radius);border:1px solid var(--border);
-  padding:20px;display:flex;align-items:center;gap:16px;
-}
-.agent-avatar{
-  width:52px;height:52px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--blue),var(--green));
-  display:flex;align-items:center;justify-content:center;
-  color:#fff;font-size:22px;font-weight:700;
-}
+.agent-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:20px;display:flex;align-items:center;gap:16px;transition:transform .2s,box-shadow .2s}
+.agent-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.agent-avatar{width:54px;height:54px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700}
 .agent-info{flex:1}
-.agent-name{font-size:16px;font-weight:700}
-.agent-email{font-size:13px;color:var(--gray);margin-top:2px}
+.agent-name{font-size:16px;font-weight:700;color:var(--text)}
+.agent-email{font-size:13px;color:var(--text-2);margin-top:2px}
 .agent-stats{display:flex;gap:16px;margin-top:10px}
-.agent-stat{font-size:12px;color:var(--gray)}
+.agent-stat{font-size:12px;color:var(--text-2)}
 .agent-stat strong{display:block;font-size:18px;color:var(--blue);font-weight:900}
 
-/* ── ALERTS ── */
-.alert{border-radius:8px;padding:12px 16px;font-size:14px;font-weight:600;margin-bottom:16px}
-.alert-success{background:var(--green-l);color:var(--green)}
-.alert-error{background:var(--red-l);color:var(--red)}
-
-/* ── LOADING ── */
-.spinner{
-  width:36px;height:36px;border:3px solid var(--border);
-  border-top-color:var(--blue);border-radius:50%;
-  animation:spin .7s linear infinite;
+.profile-avatar-wrap{text-align:center;padding:40px 20px}
+.profile-avatar{
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--green));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:42px;font-weight:900;margin:0 auto 16px;
+  box-shadow:0 8px 24px rgba(27,79,140,.25);
 }
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-center{display:flex;justify-content:center;padding:40px}
+.profile-name{font-size:24px;font-weight:900;margin-bottom:4px;color:var(--text)}
+.profile-email{color:var(--text-2);margin-bottom:10px}
+.profile-agency{margin-top:14px;padding:10px 16px;background:var(--bg);border-radius:8px;font-size:13px;color:var(--text-2);display:inline-block}
 
-/* ── SETTINGS ── */
 .settings-section{margin-bottom:32px}
 .settings-section h3{font-size:16px;font-weight:700;color:var(--blue);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
-.plan-card{
-  background:linear-gradient(135deg,var(--blue),var(--green));
-  color:#fff;border-radius:var(--radius);padding:24px;margin-bottom:20px;
-}
+.plan-card{background:linear-gradient(135deg,var(--blue),var(--green));color:#fff;border-radius:var(--radius);padding:24px;margin-bottom:20px}
 .plan-name{font-size:22px;font-weight:900;margin-bottom:4px}
-.plan-expires{font-size:14px;opacity:.8}
-.plan-upgrade{margin-top:16px}
 
-/* ── RESPONSIVE ── */
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+.loading-center{display:flex;justify-content:center;padding:60px}
+
+.toast{
+  position:fixed;bottom:24px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:#1a2332;color:#fff;padding:12px 24px;border-radius:10px;
+  font-size:14px;font-weight:600;opacity:0;transition:all .3s ease;
+  z-index:1000;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.3);pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.toast-error{background:#DC2626}
+.toast.toast-success{background:#1D7A4E}
+
 @media(max-width:768px){
   #sidebar{right:-240px;transition:.3s;box-shadow:none}
-  #sidebar.open{right:0;box-shadow:4px 0 20px rgba(0,0,0,.2)}
-  #main{margin-right:0}
+  [dir="ltr"] #sidebar{right:auto;left:-240px}
+  #sidebar.open{right:0}
+  [dir="ltr"] #sidebar.open{left:0}
+  #main{margin-right:0;margin-left:0}
   #content{padding:16px}
   .stats-grid{grid-template-columns:1fr 1fr}
-  .kanban{padding-bottom:60px}
 }
 </style>
 </head>
 <body>
 <div id="app">
-
-  <!-- SIDEBAR -->
   <div id="sidebar">
     <div class="sidebar-logo">
       <div class="icon">و</div>
-      <div>
-        <div class="name">وسيط CRM</div>
-        <div class="sub">لوحة التحكم</div>
-      </div>
+      <div><div class="name">وسيط CRM</div><div class="sub">Waseet</div></div>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-item active" data-page="dashboard">
-        <span class="ico">📊</span> لوحة التحكم
-      </div>
-      <div class="nav-item" data-page="contacts">
-        <span class="ico">👥</span> العملاء
-      </div>
-      <div class="nav-item" data-page="deals">
-        <span class="ico">💼</span> الصفقات
-      </div>
-      <div class="nav-item" data-page="properties">
-        <span class="ico">🏠</span> العقارات
-      </div>
+      <div class="nav-item active" data-page="dashboard"><span class="ico">📊</span><span data-t="dashboard">لوحة التحكم</span></div>
+      <div class="nav-item" data-page="contacts"><span class="ico">👥</span><span data-t="contacts">العملاء</span></div>
+      <div class="nav-item" data-page="deals"><span class="ico">💼</span><span data-t="deals">الصفقات</span></div>
+      <div class="nav-item" data-page="properties"><span class="ico">🏠</span><span data-t="properties">العقارات</span></div>
       <div class="nav-item" data-page="followups">
-        <span class="ico">🔔</span> التذكيرات
+        <span class="ico">🔔</span><span data-t="followups">التذكيرات</span>
         <span class="nav-badge" id="followup-badge" style="display:none">0</span>
       </div>
-      <div class="nav-item" data-page="team">
-        <span class="ico">👤</span> الفريق
-      </div>
-      <div class="nav-item" data-page="settings">
-        <span class="ico">⚙️</span> الإعدادات
-      </div>
+      <div class="nav-item" data-page="team" id="nav-team"><span class="ico">👤</span><span data-t="team">الفريق</span></div>
+      <div class="nav-item" data-page="profile"><span class="ico">🪪</span><span data-t="profile">ملفي الشخصي</span></div>
+      <div class="nav-item" data-page="settings"><span class="ico">⚙️</span><span data-t="settings">الإعدادات</span></div>
     </nav>
     <div class="sidebar-footer">
-      <div class="trial-bar" id="trial-info">⏳ جاري التحميل...</div>
+      <div class="trial-bar" id="trial-info">⏳ ...</div>
       <div style="font-size:12px">وسيط CRM © 2026</div>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div id="main">
     <div id="topbar">
-      <div class="page-title" id="page-title">لوحة التحكم</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="icon-btn" id="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none">☰</button>
+        <div class="page-title" id="page-title">لوحة التحكم</div>
+      </div>
       <div class="topbar-right">
         <button class="btn btn-primary btn-sm" id="topbar-add-btn" onclick="openAddModal()">+ إضافة</button>
-        <div class="user-chip">
+        <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
+        <button class="lang-pill" onclick="toggleLang()" id="lang-btn">EN</button>
+        <div class="user-chip" onclick="navigate('profile')">
           <div class="avatar" id="user-avatar">خ</div>
           <span id="user-name">...</span>
         </div>
-        <button class="btn btn-outline btn-sm" onclick="logout()">خروج</button>
+        <button class="btn btn-outline btn-sm" onclick="logout()" data-t="logout">خروج</button>
       </div>
     </div>
     <div id="content"></div>
   </div>
 </div>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <div class="modal-header">
@@ -380,793 +349,848 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────────────────────
-let currentPage = 'dashboard';
-let currentUser = null;
-let currentAgency = null;
-let editingId = null;
+// ── TRANSLATIONS ────────────────────────────────────────────────────────────
+const TR = {
+  ar:{
+    dashboard:'لوحة التحكم',contacts:'العملاء',deals:'الصفقات',
+    properties:'العقارات',followups:'التذكيرات',team:'الفريق',
+    settings:'الإعدادات',profile:'ملفي الشخصي',logout:'خروج',
+    add:'+ إضافة',save:'💾 حفظ',cancel:'إلغاء',edit:'تعديل',invite:'✉️ دعوة',done:'تم ✓',
+    totalContacts:'إجمالي العملاء',openDeals:'صفقات مفتوحة',
+    closedMonth:'مغلقة هذا الشهر',revenueMonth:'عمولة هذا الشهر',
+    followupsToday:'تذكيرات اليوم',agents:'الوسطاء',
+    todaySection:'🔔 تذكيرات اليوم',recentSection:'👥 آخر العملاء',
+    noFollowupsToday:'لا تذكيرات اليوم',organized:'أنت منظم!',
+    noContacts:'لا يوجد عملاء',noProperties:'لا يوجد عقارات',noDeals:'لا يوجد صفقات',
+    name:'الاسم',phone:'الجوال',source:'المصدر',status:'الحالة',
+    budget:'الميزانية',nextFollowup:'المتابعة القادمة',agent:'الوسيط',
+    search:'ابحث بالاسم أو الجوال...',allStatuses:'كل الحالات',
+    newContact:'عميل جديد',editContact:'تعديل العميل',
+    email:'البريد الإلكتروني',area:'المنطقة المفضلة',notes:'ملاحظات',
+    budgetMin:'الميزانية الدنيا (ريال)',budgetMax:'الميزانية القصوى (ريال)',
+    propertyType:'نوع العقار',
+    dealTitle:'عنوان الصفقة',client:'العميل',property:'العقار',
+    stage:'المرحلة',value:'قيمة الصفقة (ريال)',commission:'نسبة العمولة %',
+    closeDate:'تاريخ الإغلاق المتوقع',newDeal:'صفقة جديدة',editDeal:'تعديل الصفقة',
+    propTitle:'عنوان العقار',type:'النوع',price:'السعر (ريال)',
+    sqm:'المساحة (م²)',beds:'غرف النوم',baths:'دورات المياه',
+    city:'المدينة',neighborhood:'الحي',description:'وصف',
+    newProperty:'عقار جديد',editProperty:'تعديل العقار',
+    followupDate:'تاريخ التذكير',followupNote:'الملاحظة',newFollowup:'تذكير جديد',
+    overdue:'⚠️ متأخرة',today:'📅 اليوم',upcoming:'🗓️ قادمة',
+    lateLabel:'⚠️ متأخر:',noTodayFU:'🎉 لا تذكيرات اليوم!',noUpcomingFU:'لا تذكيرات قادمة',
+    newAgent:'+ دعوة وسيط',inviteAgent:'دعوة وسيط',adminBadge:'مدير',agentRole:'وسيط',
+    defaultPwHint:'💡 كلمة المرور الافتراضية هي رقم جواله، أو "Waseet123"',
+    deactivate:'إيقاف',activate:'تفعيل',
+    agencyInfo:'معلومات الوكالة',agencyName:'اسم الوكالة',currentPlan:'الخطة الحالية',
+    support:'الدعم والتواصل',leadForm:'رابط نموذج العملاء',
+    leadFormHint:'أرسل هذا الرابط لعملاءك ليسجلوا بياناتهم مباشرة:',
+    copy:'نسخ',copied:'✅ تم النسخ!',upgradePlan:'⬆️ ترقية الخطة',
+    trial:'فترة التجربة',daysLeft:'يوم متبقي',trialExpired:'انتهت فترة التجربة',
+    editProfile:'تعديل الملف الشخصي',changePassword:'تغيير كلمة المرور',
+    currentPassword:'كلمة المرور الحالية',newPassword:'كلمة المرور الجديدة',
+    profileSaved:'✅ تم حفظ الملف الشخصي',passwordChanged:'✅ تم تغيير كلمة المرور',
+    confirmDelete:'هل أنت متأكد من الحذف؟',
+    chooseClient:'اختر عميل...',chooseProp:'اختر عقار...',chooseAgent:'اختر وسيط...',
+    notSpecified:'غير محدد',
+    whatsappSupport:'📱 واتساب الدعم',emailSupport:'✉️ البريد الإلكتروني',
+    contactCount:'عميل',openDealsLabel:'صفقة مفتوحة',closedLabel:'مغلقة هذا الشهر',
+  },
+  en:{
+    dashboard:'Dashboard',contacts:'Clients',deals:'Deals',
+    properties:'Properties',followups:'Follow-ups',team:'Team',
+    settings:'Settings',profile:'My Profile',logout:'Logout',
+    add:'+ Add',save:'💾 Save',cancel:'Cancel',edit:'Edit',invite:'✉️ Invite',done:'Done ✓',
+    totalContacts:'Total Clients',openDeals:'Open Deals',
+    closedMonth:'Closed This Month',revenueMonth:'Commission This Month',
+    followupsToday:"Today's Follow-ups",agents:'Agents',
+    todaySection:"🔔 Today's Follow-ups",recentSection:'👥 Recent Clients',
+    noFollowupsToday:'No follow-ups today',organized:"You're organized!",
+    noContacts:'No clients yet',noProperties:'No properties yet',noDeals:'No deals yet',
+    name:'Name',phone:'Phone',source:'Source',status:'Status',
+    budget:'Budget',nextFollowup:'Next Follow-up',agent:'Agent',
+    search:'Search by name or phone...',allStatuses:'All Statuses',
+    newContact:'New Client',editContact:'Edit Client',
+    email:'Email',area:'Preferred Area',notes:'Notes',
+    budgetMin:'Min Budget (SAR)',budgetMax:'Max Budget (SAR)',propertyType:'Property Type',
+    dealTitle:'Deal Title',client:'Client',property:'Property',
+    stage:'Stage',value:'Deal Value (SAR)',commission:'Commission %',
+    closeDate:'Expected Close Date',newDeal:'New Deal',editDeal:'Edit Deal',
+    propTitle:'Property Title',type:'Type',price:'Price (SAR)',
+    sqm:'Area (m²)',beds:'Bedrooms',baths:'Bathrooms',
+    city:'City',neighborhood:'Neighborhood',description:'Description',
+    newProperty:'New Property',editProperty:'Edit Property',
+    followupDate:'Follow-up Date',followupNote:'Note',newFollowup:'New Follow-up',
+    overdue:'⚠️ Overdue',today:'📅 Today',upcoming:'🗓️ Upcoming',
+    lateLabel:'⚠️ Overdue:',noTodayFU:'🎉 No follow-ups today!',noUpcomingFU:'No upcoming follow-ups',
+    newAgent:'+ Invite Agent',inviteAgent:'Invite Agent',adminBadge:'Admin',agentRole:'Agent',
+    defaultPwHint:'💡 Default password is their phone number, or "Waseet123".',
+    deactivate:'Deactivate',activate:'Activate',
+    agencyInfo:'Agency Info',agencyName:'Agency Name',currentPlan:'Current Plan',
+    support:'Support & Contact',leadForm:'Lead Capture Link',
+    leadFormHint:'Share this link so clients can register directly:',
+    copy:'Copy',copied:'✅ Copied!',upgradePlan:'⬆️ Upgrade Plan',
+    trial:'Free Trial',daysLeft:'days left',trialExpired:'Trial period ended',
+    editProfile:'Edit Profile',changePassword:'Change Password',
+    currentPassword:'Current Password',newPassword:'New Password',
+    profileSaved:'✅ Profile saved',passwordChanged:'✅ Password changed',
+    confirmDelete:'Are you sure you want to delete?',
+    chooseClient:'Choose client...',chooseProp:'Choose property...',chooseAgent:'Choose agent...',
+    notSpecified:'Not specified',
+    whatsappSupport:'📱 WhatsApp Support',emailSupport:'✉️ Email Support',
+    contactCount:'clients',openDealsLabel:'open deals',closedLabel:'closed this month',
+  }
+};
 
-// ── API ────────────────────────────────────────────────────────────────────
+const STATUS_LABELS = {
+  ar:{'جديد':'جديد','متابعة':'متابعة','مهتم':'مهتم','غير مهتم':'غير مهتم','مغلق':'مغلق','متاح':'متاح','محجوز':'محجوز','مباع':'مباع'},
+  en:{'جديد':'New','متابعة':'Following','مهتم':'Interested','غير مهتم':'Not Interested','مغلق':'Closed','متاح':'Available','محجوز':'Reserved','مباع':'Sold'}
+};
+
+const STAGES = ['جديد','معاينة','عرض سعر','تفاوض','مغلقة'];
+const STAGES_EN = {'جديد':'New','معاينة':'Site Visit','عرض سعر':'Price Quote','تفاوض':'Negotiation','مغلقة':'Closed'};
+const STAGE_COLORS = {'جديد':'var(--blue)','معاينة':'var(--orange)','عرض سعر':'#7C3AED','تفاوض':'#DB2777','مغلقة':'var(--green)'};
+
+// ── LANG & THEME ────────────────────────────────────────────────────────────
+let LANG = localStorage.getItem('waseet_lang') || 'ar';
+let THEME = localStorage.getItem('waseet_theme') || 'light';
+
+function t(k){ return TR[LANG][k] || TR.ar[k] || k }
+
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = LANG === 'ar' ? 'rtl' : 'ltr';
+  document.getElementById('lang-btn').textContent = LANG === 'ar' ? 'EN' : 'عر';
+  document.querySelectorAll('[data-t]').forEach(el => {
+    if(TR[LANG][el.dataset.t]) el.textContent = TR[LANG][el.dataset.t];
+  });
+}
+function toggleLang(){
+  LANG = LANG === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('waseet_lang', LANG);
+  applyLang();
+  if(currentPage) navigate(currentPage);
+}
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', THEME);
+  document.getElementById('theme-btn').textContent = THEME === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme(){
+  THEME = THEME === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('waseet_theme', THEME);
+  applyTheme();
+}
+
+// ── STATE ───────────────────────────────────────────────────────────────────
+let currentPage = 'dashboard', currentUser = null, currentAgency = null, editingId = null;
 const TOKEN_KEY = 'waseet_token';
+function getToken(){ return localStorage.getItem(TOKEN_KEY) }
+function clearToken(){ localStorage.removeItem(TOKEN_KEY) }
 
-function getToken() { return localStorage.getItem(TOKEN_KEY); }
-function setToken(t) { localStorage.setItem(TOKEN_KEY, t); }
-function clearToken() { localStorage.removeItem(TOKEN_KEY); }
-
-async function api(method, path, body) {
-  const opts = {
-    method,
-    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch('/api' + path, opts);
+async function api(method, path, body){
+  const opts = { method, headers:{'Content-Type':'application/json','Authorization':'Bearer '+getToken()} };
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch('/api'+path, opts);
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'خطأ');
+  if(!res.ok) throw new Error(data.error || 'Error');
   return data;
 }
 
-// ── AUTH CHECK ─────────────────────────────────────────────────────────────
-async function initApp() {
-  if (!getToken()) {
-    window.location.href = '/login.html';
-    return;
-  }
-  try {
-    const {user, agency} = await api('GET', '/auth/me');
-    currentUser = user;
-    currentAgency = agency;
+// ── AUTH ────────────────────────────────────────────────────────────────────
+async function initApp(){
+  applyTheme(); applyLang();
+  if(window.innerWidth <= 768) document.getElementById('menu-btn').style.display='flex';
+  if(!getToken()){ window.location.href='/login.html'; return; }
+  try{
+    const {user,agency} = await api('GET','/auth/me');
+    currentUser = user; currentAgency = agency;
     document.getElementById('user-name').textContent = user.name;
-    document.getElementById('user-avatar').textContent = user.name.charAt(0);
-    // Trial info
+    document.getElementById('user-avatar').textContent = user.name.charAt(0).toUpperCase();
     const trialEl = document.getElementById('trial-info');
-    if (agency.plan === 'trial' && agency.trial_ends) {
-      const days = Math.ceil((new Date(agency.trial_ends) - new Date()) / 86400000);
-      trialEl.textContent = days > 0 ? `⏳ ${days} يوم متبقي من التجربة` : '⚠️ انتهت فترة التجربة';
+    if(agency.plan==='trial' && agency.trial_ends){
+      const days = Math.ceil((new Date(agency.trial_ends)-new Date())/86400000);
+      trialEl.textContent = days > 0 ? `⏳ ${days} ${t('daysLeft')}` : `⚠️ ${t('trialExpired')}`;
       trialEl.style.borderColor = days < 7 ? 'rgba(255,100,100,.5)' : 'rgba(255,200,0,.3)';
-    } else {
-      trialEl.textContent = `✅ خطة ${agency.plan}`;
-    }
-    // Admin-only items
-    if (user.role !== 'admin') document.querySelector('[data-page="team"]').style.display = 'none';
+    } else { trialEl.textContent = `✅ ${agency.plan}`; }
+    if(user.role !== 'admin') document.getElementById('nav-team').style.display='none';
     navigate('dashboard');
     loadFollowupBadge();
-  } catch(e) {
-    clearToken();
-    window.location.href = '/login.html';
-  }
+  } catch(e){ clearToken(); window.location.href='/login.html'; }
 }
 
-async function loadFollowupBadge() {
-  try {
-    const {followups} = await api('GET', '/followups');
+async function loadFollowupBadge(){
+  try{
+    const {followups} = await api('GET','/followups');
     const badge = document.getElementById('followup-badge');
-    if (followups.length > 0) {
-      badge.textContent = followups.length;
-      badge.style.display = 'inline-block';
-    } else {
-      badge.style.display = 'none';
-    }
-  } catch(e) {}
+    badge.textContent = followups.length;
+    badge.style.display = followups.length > 0 ? 'inline-block' : 'none';
+  }catch(e){}
 }
 
-function logout() {
-  clearToken();
-  window.location.href = '/login.html';
-}
+function logout(){ clearToken(); window.location.href='/login.html'; }
 
-// ── NAVIGATION ────────────────────────────────────────────────────────────
-const PAGE_TITLES = {
-  dashboard: 'لوحة التحكم', contacts: 'العملاء', deals: 'الصفقات',
-  properties: 'العقارات', followups: 'التذكيرات', team: 'الفريق', settings: 'الإعدادات'
-};
-const ADD_LABELS = {
-  contacts: '+ عميل جديد', deals: '+ صفقة جديدة', properties: '+ عقار جديد',
-  followups: '+ تذكير جديد', team: '+ دعوة وسيط'
-};
+// ── NAVIGATION ──────────────────────────────────────────────────────────────
+const ADD_KEYS = {contacts:'newContact',deals:'newDeal',properties:'newProperty',followups:'newFollowup',team:'newAgent'};
 
-function navigate(page) {
+function navigate(page){
   currentPage = page;
-  document.querySelectorAll('.nav-item').forEach(el => {
-    el.classList.toggle('active', el.dataset.page === page);
-  });
-  document.getElementById('page-title').textContent = PAGE_TITLES[page] || page;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page===page));
+  document.getElementById('page-title').textContent = t(page) || page;
   const addBtn = document.getElementById('topbar-add-btn');
-  addBtn.textContent = ADD_LABELS[page] || '+ إضافة';
-  addBtn.style.display = ADD_LABELS[page] ? 'flex' : 'none';
+  if(ADD_KEYS[page]){ addBtn.textContent = t(ADD_KEYS[page]); addBtn.style.display='flex'; }
+  else { addBtn.style.display='none'; }
   renderPage(page);
 }
 
-document.querySelectorAll('.nav-item').forEach(el => {
-  el.addEventListener('click', () => navigate(el.dataset.page));
-});
+document.querySelectorAll('.nav-item').forEach(el => el.addEventListener('click',()=>navigate(el.dataset.page)));
 
-// ── PAGES ─────────────────────────────────────────────────────────────────
-async function renderPage(page) {
+async function renderPage(page){
   const content = document.getElementById('content');
   content.innerHTML = '<div class="loading-center"><div class="spinner"></div></div>';
-  try {
-    switch(page) {
+  try{
+    switch(page){
       case 'dashboard':  await renderDashboard(); break;
       case 'contacts':   await renderContacts(); break;
       case 'deals':      await renderDeals(); break;
       case 'properties': await renderProperties(); break;
       case 'followups':  await renderFollowups(); break;
       case 'team':       await renderTeam(); break;
+      case 'profile':    renderProfile(); break;
       case 'settings':   renderSettings(); break;
     }
-  } catch(e) {
-    content.innerHTML = `<div class="alert alert-error">خطأ: ${e.message}</div>`;
-  }
+  }catch(e){ content.innerHTML=`<div class="alert" style="background:var(--red-l);color:var(--red);border-radius:8px;padding:14px">${e.message}</div>`; }
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────────────────────
-async function renderDashboard() {
-  const {stats, recent_contacts, followups_today} = await api('GET', '/dashboard');
+// ── DASHBOARD ───────────────────────────────────────────────────────────────
+async function renderDashboard(){
+  const {stats,recent_contacts,followups_today} = await api('GET','/dashboard');
   document.getElementById('content').innerHTML = `
-    <div class="stats-grid">
-      <div class="stat-card"><div class="icon">👥</div><div class="label">إجمالي العملاء</div><div class="value">${stats.contacts}</div></div>
-      <div class="stat-card"><div class="icon">💼</div><div class="label">صفقات مفتوحة</div><div class="value">${stats.open_deals}</div></div>
-      <div class="stat-card green"><div class="icon">✅</div><div class="label">مغلقة هذا الشهر</div><div class="value">${stats.closed_this_month}</div></div>
-      <div class="stat-card green"><div class="icon">💰</div><div class="label">عمولة هذا الشهر</div><div class="value" style="font-size:20px">${formatSAR(stats.revenue_this_month)}</div></div>
-      <div class="stat-card orange"><div class="icon">🔔</div><div class="label">تذكيرات اليوم</div><div class="value">${stats.followups_today}</div></div>
-      <div class="stat-card"><div class="icon">👤</div><div class="label">الوسطاء</div><div class="value">${stats.agents}</div></div>
-    </div>
-    <div class="dash-grid">
-      <div class="card">
-        <div class="card-header"><h3>🔔 تذكيرات اليوم</h3></div>
-        <div class="card-body">
-          ${followups_today.length ? followups_today.map(f => `
-            <div class="followup-item">
-              <div class="avatar" style="width:36px;height:36px;font-size:14px">${(f.contact_name||'؟').charAt(0)}</div>
-              <div style="flex:1">
-                <div class="name">${f.contact_name||'بدون اسم'}</div>
-                <div class="note">${f.note||''}</div>
-                <div class="date">${formatDate(f.due_date)}</div>
-              </div>
-              <button class="btn btn-green btn-sm" onclick="doneFollowup(${f.id})">تم ✓</button>
-            </div>
-          `).join('') : '<div class="empty"><div class="emoji">🎉</div><h3>لا تذكيرات اليوم</h3><p>أنت منظم!</p></div>'}
+    <div class="page-enter">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="icon">👥</div><div class="label">${t('totalContacts')}</div><div class="value">${stats.contacts}</div></div>
+        <div class="stat-card"><div class="icon">💼</div><div class="label">${t('openDeals')}</div><div class="value">${stats.open_deals}</div></div>
+        <div class="stat-card green"><div class="icon">✅</div><div class="label">${t('closedMonth')}</div><div class="value">${stats.closed_this_month}</div></div>
+        <div class="stat-card green"><div class="icon">💰</div><div class="label">${t('revenueMonth')}</div><div class="value" style="font-size:18px">${formatSAR(stats.revenue_this_month)}</div></div>
+        <div class="stat-card orange"><div class="icon">🔔</div><div class="label">${t('followupsToday')}</div><div class="value">${stats.followups_today}</div></div>
+        <div class="stat-card"><div class="icon">👤</div><div class="label">${t('agents')}</div><div class="value">${stats.agents}</div></div>
+      </div>
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-header"><h3>${t('todaySection')}</h3></div>
+          <div class="card-body">
+            ${followups_today.length ? followups_today.map(f=>`
+              <div class="followup-item">
+                <div class="avatar" style="width:36px;height:36px;font-size:14px">${(f.contact_name||'?').charAt(0)}</div>
+                <div style="flex:1">
+                  <div style="font-weight:700;font-size:14px">${f.contact_name||'—'}</div>
+                  <div style="font-size:12px;color:var(--text-2)">${f.note||''}</div>
+                  <div style="font-size:12px;color:var(--orange);font-weight:600;margin-top:2px">${formatDate(f.due_date)}</div>
+                </div>
+                <button class="btn btn-green btn-sm" onclick="doneFollowup(${f.id})">${t('done')}</button>
+              </div>`).join('') :
+              `<div class="empty"><div class="emoji">🎉</div><h3>${t('noFollowupsToday')}</h3><p>${t('organized')}</p></div>`}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>${t('recentSection')}</h3></div>
+          <div class="card-body">
+            ${recent_contacts.length ? recent_contacts.map(c=>`
+              <div class="contact-row-item">
+                <div class="avatar" style="width:36px;height:36px;font-size:14px">${c.name.charAt(0)}</div>
+                <div style="flex:1">
+                  <div style="font-weight:700;font-size:14px">${c.name}</div>
+                  <div style="font-size:12px;color:var(--text-2)">${c.phone||''}${c.source?' • '+c.source:''}</div>
+                </div>
+                ${statusBadge(c.status)}
+              </div>`).join('') :
+              `<div class="empty"><div class="emoji">👥</div><h3>${t('noContacts')}</h3></div>`}
+          </div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header"><h3>👥 آخر العملاء</h3></div>
-        <div class="card-body">
-          ${recent_contacts.length ? recent_contacts.map(c => `
-            <div class="contact-row-item">
-              <div class="avatar" style="width:36px;height:36px;font-size:14px">${c.name.charAt(0)}</div>
-              <div style="flex:1">
-                <div style="font-weight:700;font-size:14px">${c.name}</div>
-                <div style="font-size:12px;color:var(--gray)">${c.phone||''} • ${c.source||''}</div>
-              </div>
-              ${statusBadge(c.status)}
-            </div>
-          `).join('') : '<div class="empty"><div class="emoji">👥</div><h3>لا عملاء بعد</h3></div>'}
-        </div>
-      </div>
-    </div>
-  `;
+    </div>`;
 }
 
-// ── CONTACTS ──────────────────────────────────────────────────────────────
-let contactsSearch = '', contactsStatus = '';
+// ── CONTACTS ────────────────────────────────────────────────────────────────
+let contactsSearch='', contactsStatus='';
 
-async function renderContacts() {
+async function renderContacts(){
   const params = new URLSearchParams();
-  if (contactsSearch) params.set('search', contactsSearch);
-  if (contactsStatus) params.set('status', contactsStatus);
-  const {contacts, total} = await api('GET', '/contacts?' + params);
-
+  if(contactsSearch) params.set('search',contactsSearch);
+  if(contactsStatus) params.set('status',contactsStatus);
+  const {contacts,total} = await api('GET','/contacts?'+params);
   document.getElementById('content').innerHTML = `
-    <div class="search-bar">
-      <div class="search-input-wrap">
-        <span class="search-icon">🔍</span>
-        <input id="contacts-search" placeholder="ابحث بالاسم أو الجوال..." value="${contactsSearch}" oninput="contactsSearch=this.value;renderContacts()">
+    <div class="page-enter">
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input id="cs" placeholder="${t('search')}" value="${contactsSearch}" oninput="contactsSearch=this.value;renderContacts()">
+        </div>
+        <select onchange="contactsStatus=this.value;renderContacts()">
+          <option value="">${t('allStatuses')}</option>
+          ${['جديد','متابعة','مهتم','غير مهتم','مغلق'].map(s=>`<option value="${s}" ${contactsStatus===s?'selected':''}>${statusLabel(s)}</option>`).join('')}
+        </select>
+        <span style="color:var(--text-2);font-size:13px">${total}</span>
       </div>
-      <select id="contacts-status" onchange="contactsStatus=this.value;renderContacts()">
-        <option value="">كل الحالات</option>
-        <option value="جديد" ${contactsStatus==='جديد'?'selected':''}>جديد</option>
-        <option value="متابعة" ${contactsStatus==='متابعة'?'selected':''}>متابعة</option>
-        <option value="مهتم" ${contactsStatus==='مهتم'?'selected':''}>مهتم</option>
-        <option value="غير مهتم" ${contactsStatus==='غير مهتم'?'selected':''}>غير مهتم</option>
-        <option value="مغلق" ${contactsStatus==='مغلق'?'selected':''}>مغلق</option>
-      </select>
-      <span style="color:var(--gray);font-size:13px">${total} عميل</span>
-    </div>
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th>الاسم</th><th>الجوال</th><th>المصدر</th><th>الحالة</th>
-            <th>الميزانية</th><th>المتابعة القادمة</th><th>الوسيط</th><th></th>
-          </tr></thead>
-          <tbody>
-          ${contacts.length ? contacts.map(c => `
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr>
+          <th>${t('name')}</th><th>${t('phone')}</th><th>${t('source')}</th>
+          <th>${t('status')}</th><th>${t('budget')}</th>
+          <th>${t('nextFollowup')}</th><th>${t('agent')}</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${contacts.length ? contacts.map(c=>`
             <tr>
               <td><strong>${c.name}</strong></td>
-              <td><a href="https://wa.me/${c.phone}" target="_blank" style="color:var(--green)">📱 ${c.phone||'—'}</a></td>
+              <td><a href="https://wa.me/${(c.phone||'').replace(/\D/g,'')}" target="_blank" style="color:var(--green)">📱 ${c.phone||'—'}</a></td>
               <td>${c.source||'—'}</td>
               <td>${statusBadge(c.status)}</td>
-              <td>${c.budget_min||c.budget_max ? formatSAR((c.budget_min||0)) + ' – ' + formatSAR((c.budget_max||0)) : '—'}</td>
-              <td>${c.next_followup ? '<span style="color:var(--orange);font-weight:600">' + formatDate(c.next_followup) + '</span>' : '—'}</td>
+              <td>${c.budget_min||c.budget_max?formatSAR(c.budget_min||0)+' – '+formatSAR(c.budget_max||0):'—'}</td>
+              <td>${c.next_followup?'<span style="color:var(--orange);font-weight:600">'+formatDate(c.next_followup)+'</span>':'—'}</td>
               <td>${c.agent_name||'—'}</td>
               <td style="white-space:nowrap">
-                <button class="btn btn-outline btn-sm btn-icon" onclick="editContact(${c.id})" title="تعديل">✏️</button>
-                <button class="btn btn-danger btn-sm btn-icon" onclick="deleteContact(${c.id},'${c.name}')" title="حذف">🗑️</button>
+                <button class="btn btn-outline btn-sm btn-icon" onclick="editContact(${c.id})">✏️</button>
+                <button class="btn btn-danger btn-sm btn-icon" onclick="deleteContact(${c.id},'${c.name.replace(/'/g,'')}')">🗑️</button>
               </td>
-            </tr>
-          `).join('') : '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--gray)">لا يوجد عملاء</td></tr>'}
-          </tbody>
-        </table>
+            </tr>`).join('') :
+            `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-2)">${t('noContacts')}</td></tr>`}
+        </tbody>
+      </table></div></div>
+    </div>`;
+}
+
+function contactForm(c={}){
+  return `<form onsubmit="saveContact(event)">
+    <div class="form-grid">
+      <div class="form-group"><label>${t('name')} *</label><input name="name" value="${c.name||''}" required></div>
+      <div class="form-group"><label>${t('phone')}</label><input name="phone" value="${c.phone||''}" placeholder="05xxxxxxxx"></div>
+      <div class="form-group"><label>${t('email')}</label><input name="email" type="email" value="${c.email||''}"></div>
+      <div class="form-group"><label>${t('source')}</label>
+        <select name="source">${['واتساب','إيميل','توصية','سيتي سكيب','إعلان','أخرى'].map(s=>`<option ${(c.source||'واتساب')===s?'selected':''}>${s}</option>`).join('')}</select>
       </div>
+      <div class="form-group"><label>${t('status')}</label>
+        <select name="status">${['جديد','متابعة','مهتم','غير مهتم','مغلق'].map(s=>`<option value="${s}" ${(c.status||'جديد')===s?'selected':''}>${statusLabel(s)}</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label>${t('propertyType')}</label>
+        <select name="property_type"><option value="">${t('notSpecified')}</option>${['شقة','فيلا','أرض','تجاري','مكتب'].map(s=>`<option ${c.property_type===s?'selected':''}>${s}</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label>${t('budgetMin')}</label><input name="budget_min" type="number" value="${c.budget_min||''}"></div>
+      <div class="form-group"><label>${t('budgetMax')}</label><input name="budget_max" type="number" value="${c.budget_max||''}"></div>
+      <div class="form-group"><label>${t('area')}</label><input name="preferred_area" value="${c.preferred_area||''}"></div>
+      <div class="form-group"><label>${t('nextFollowup')}</label><input name="next_followup" type="date" value="${c.next_followup||''}"></div>
     </div>
-  `;
+    <div class="form-group" style="margin-top:14px"><label>${t('notes')}</label><textarea name="notes">${c.notes||''}</textarea></div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+      <button type="submit" class="btn btn-primary">${t('save')}</button>
+    </div>
+  </form>`;
 }
 
-function contactForm(c={}) {
-  return `
-    <form onsubmit="saveContact(event)">
-      <div class="form-grid">
-        <div class="form-group"><label>الاسم *</label><input name="name" value="${c.name||''}" required></div>
-        <div class="form-group"><label>الجوال</label><input name="phone" value="${c.phone||''}" placeholder="05xxxxxxxx"></div>
-        <div class="form-group"><label>البريد الإلكتروني</label><input name="email" type="email" value="${c.email||''}"></div>
-        <div class="form-group"><label>المصدر</label>
-          <select name="source">
-            ${['واتساب','إيميل','توصية','سيتي سكيب','إعلان','أخرى'].map(s => `<option ${(c.source||'واتساب')===s?'selected':''}>${s}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group"><label>الحالة</label>
-          <select name="status">
-            ${['جديد','متابعة','مهتم','غير مهتم','مغلق'].map(s => `<option ${(c.status||'جديد')===s?'selected':''}>${s}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group"><label>نوع العقار</label>
-          <select name="property_type">
-            <option value="">غير محدد</option>
-            ${['شقة','فيلا','أرض','تجاري','مكتب'].map(s => `<option ${c.property_type===s?'selected':''}>${s}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group"><label>الميزانية الدنيا (ريال)</label><input name="budget_min" type="number" value="${c.budget_min||''}"></div>
-        <div class="form-group"><label>الميزانية القصوى (ريال)</label><input name="budget_max" type="number" value="${c.budget_max||''}"></div>
-        <div class="form-group"><label>المنطقة المفضلة</label><input name="preferred_area" value="${c.preferred_area||''}"></div>
-        <div class="form-group"><label>تاريخ المتابعة القادمة</label><input name="next_followup" type="date" value="${c.next_followup||''}"></div>
-      </div>
-      <div class="form-group" style="margin-top:14px"><label>ملاحظات</label><textarea name="notes">${c.notes||''}</textarea></div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-outline" onclick="closeModal()">إلغاء</button>
-        <button type="submit" class="btn btn-primary">💾 حفظ</button>
-      </div>
-    </form>
-  `;
-}
-
-async function saveContact(e) {
+async function saveContact(e){
   e.preventDefault();
-  const fd = new FormData(e.target);
-  const data = Object.fromEntries(fd);
-  // Convert numbers
-  if (data.budget_min) data.budget_min = parseFloat(data.budget_min);
-  if (data.budget_max) data.budget_max = parseFloat(data.budget_max);
-  try {
-    if (editingId) {
-      await api('PUT', '/contacts/' + editingId, data);
-    } else {
-      await api('POST', '/contacts', data);
-    }
-    closeModal();
-    await renderContacts();
-    await loadFollowupBadge();
-  } catch(err) {
-    alert(err.message);
-  }
+  const fd=new FormData(e.target), data=Object.fromEntries(fd);
+  if(data.budget_min) data.budget_min=parseFloat(data.budget_min);
+  if(data.budget_max) data.budget_max=parseFloat(data.budget_max);
+  try{
+    if(editingId) await api('PUT','/contacts/'+editingId,data);
+    else await api('POST','/contacts',data);
+    closeModal(); await renderContacts(); loadFollowupBadge();
+    showToast(t('profileSaved').replace('الملف الشخصي',''));
+  }catch(err){ showToast(err.message,'error'); }
 }
 
-async function editContact(id) {
-  const {contact} = await api('GET', '/contacts/' + id);
-  editingId = id;
-  openModal('تعديل العميل', contactForm(contact));
+async function editContact(id){
+  const {contact}=await api('GET','/contacts/'+id);
+  editingId=id; openModal(t('editContact'),contactForm(contact));
+}
+async function deleteContact(id,name){
+  if(!confirm(t('confirmDelete'))) return;
+  await api('DELETE','/contacts/'+id); renderContacts();
 }
 
-async function deleteContact(id, name) {
-  if (!confirm(`حذف العميل "${name}"؟`)) return;
-  await api('DELETE', '/contacts/' + id);
-  renderContacts();
-}
-
-// ── DEALS (KANBAN) ─────────────────────────────────────────────────────────
-const STAGES = ['جديد','معاينة','عرض سعر','تفاوض','مغلقة'];
-const STAGE_COLORS = {'جديد':'var(--blue)','معاينة':'var(--orange)','عرض سعر':'#7C3AED','تفاوض':'#DB2777','مغلقة':'var(--green)'};
-
-async function renderDeals() {
-  const {deals} = await api('GET', '/deals');
-  const byStage = {};
-  STAGES.forEach(s => byStage[s] = []);
-  deals.forEach(d => { if (byStage[d.stage]) byStage[d.stage].push(d); else byStage['جديد'].push(d); });
-
-  document.getElementById('content').innerHTML = `
-    <div class="kanban-wrap">
-      <div class="kanban">
-        ${STAGES.map(stage => `
+// ── DEALS ───────────────────────────────────────────────────────────────────
+async function renderDeals(){
+  const {deals}=await api('GET','/deals');
+  const byStage={};
+  STAGES.forEach(s=>byStage[s]=[]);
+  deals.forEach(d=>{ if(byStage[d.stage]) byStage[d.stage].push(d); else byStage['جديد'].push(d); });
+  document.getElementById('content').innerHTML=`
+    <div class="page-enter">
+      <div class="kanban-wrap"><div class="kanban">
+        ${STAGES.map(stage=>`
           <div class="kanban-col" data-stage="${stage}" ondragover="allowDrop(event)" ondrop="dropDeal(event,'${stage}')">
             <div class="kanban-col-header" style="border-top:3px solid ${STAGE_COLORS[stage]}">
-              <span>${stage}</span>
+              <span>${LANG==='en'?(STAGES_EN[stage]||stage):stage}</span>
               <span class="badge badge-gray">${byStage[stage].length}</span>
             </div>
             <div class="kanban-col-body">
-              ${byStage[stage].map(d => `
+              ${byStage[stage].map(d=>`
                 <div class="kanban-card" draggable="true" id="deal-${d.id}"
-                     ondragstart="dragDeal(event,${d.id})"
-                     ondragend="endDragDeal(event)">
+                     ondragstart="dragDeal(event,${d.id})" ondragend="endDragDeal(event)">
                   <h4>${d.title}</h4>
                   <div class="meta">
-                    ${d.contact_name ? `<span>👤 ${d.contact_name}</span>` : ''}
-                    ${d.agent_name ? `<span>🧑‍💼 ${d.agent_name}</span>` : ''}
-                    ${d.expected_close ? `<span>📅 ${formatDate(d.expected_close)}</span>` : ''}
+                    ${d.contact_name?`<span>👤 ${d.contact_name}</span>`:''}
+                    ${d.agent_name?`<span>🧑‍💼 ${d.agent_name}</span>`:''}
+                    ${d.expected_close?`<span>📅 ${formatDate(d.expected_close)}</span>`:''}
                   </div>
-                  ${d.value ? `<div class="value-tag">💰 ${formatSAR(d.value)}</div>` : ''}
+                  ${d.value?`<div class="value-tag">💰 ${formatSAR(d.value)}</div>`:''}
                   <div style="margin-top:10px;display:flex;gap:6px">
-                    <button class="btn btn-outline btn-sm" style="flex:1" onclick="editDeal(${d.id})">تعديل</button>
+                    <button class="btn btn-outline btn-sm" style="flex:1" onclick="editDeal(${d.id})">${t('edit')}</button>
                     <button class="btn btn-danger btn-sm btn-icon" onclick="deleteDeal(${d.id})">🗑️</button>
                   </div>
-                </div>
-              `).join('')}
+                </div>`).join('')}
             </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
+          </div>`).join('')}
+      </div></div>
+    </div>`;
 }
 
-let draggingDealId = null;
-
-function dragDeal(e, id) {
-  draggingDealId = id;
-  e.target.classList.add('dragging');
-}
-function endDragDeal(e) { e.target.classList.remove('dragging'); }
-function allowDrop(e) {
+let draggingDealId=null;
+function dragDeal(e,id){ draggingDealId=id; e.target.classList.add('dragging'); }
+function endDragDeal(e){ e.target.classList.remove('dragging'); }
+function allowDrop(e){
   e.preventDefault();
+  document.querySelectorAll('.kanban-col').forEach(c=>c.classList.remove('drag-over'));
   e.currentTarget.classList.add('drag-over');
 }
-async function dropDeal(e, stage) {
+async function dropDeal(e,stage){
   e.preventDefault();
-  document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
-  if (!draggingDealId) return;
-  await api('PUT', '/deals/' + draggingDealId, { stage, ...(stage === 'مغلقة' ? {is_won:1} : {}) });
+  document.querySelectorAll('.kanban-col').forEach(c=>c.classList.remove('drag-over'));
+  if(!draggingDealId) return;
+  await api('PUT','/deals/'+draggingDealId,{stage,...(stage==='مغلقة'?{is_won:1}:{})});
   renderDeals();
 }
 
-async function dealForm(d={}) {
-  const {contacts} = await api('GET', '/contacts');
-  const {properties} = await api('GET', '/properties');
-  const agents = await api('GET', '/team').then(r=>r.agents).catch(()=>[]);
-  return `
-    <form onsubmit="saveDeal(event)">
-      <div class="form-grid">
-        <div class="form-group" style="grid-column:1/-1"><label>عنوان الصفقة *</label><input name="title" value="${d.title||''}" required placeholder="مثال: شقة المروج — أحمد العمري"></div>
-        <div class="form-group"><label>العميل</label>
-          <select name="contact_id">
-            <option value="">اختر عميل...</option>
-            ${contacts.map(c => `<option value="${c.id}" ${d.contact_id==c.id?'selected':''}>${c.name}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group"><label>العقار</label>
-          <select name="property_id">
-            <option value="">اختر عقار...</option>
-            ${properties.map(p => `<option value="${p.id}" ${d.property_id==p.id?'selected':''}>${p.title}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group"><label>المرحلة</label>
-          <select name="stage">
-            ${STAGES.map(s => `<option ${(d.stage||'جديد')===s?'selected':''}>${s}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group"><label>الوسيط المسؤول</label>
-          <select name="assigned_to">
-            ${agents.map(a => `<option value="${a.id}" ${d.assigned_to==a.id?'selected':''}>${a.name}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group"><label>قيمة الصفقة (ريال)</label><input name="value" type="number" value="${d.value||''}"></div>
-        <div class="form-group"><label>نسبة العمولة %</label><input name="commission_pct" type="number" step="0.1" value="${d.commission_pct||'2.5'}"></div>
-        <div class="form-group"><label>تاريخ الإغلاق المتوقع</label><input name="expected_close" type="date" value="${d.expected_close||''}"></div>
+async function dealForm(d={}){
+  const {contacts}=await api('GET','/contacts');
+  const {properties}=await api('GET','/properties');
+  const agents=await api('GET','/team').then(r=>r.agents).catch(()=>[]);
+  return `<form onsubmit="saveDeal(event)">
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1"><label>${t('dealTitle')} *</label><input name="title" value="${d.title||''}" required></div>
+      <div class="form-group"><label>${t('client')}</label>
+        <select name="contact_id"><option value="">${t('chooseClient')}</option>
+          ${contacts.map(c=>`<option value="${c.id}" ${d.contact_id==c.id?'selected':''}>${c.name}</option>`).join('')}
+        </select>
       </div>
-      <div class="form-group" style="margin-top:14px"><label>ملاحظات</label><textarea name="notes">${d.notes||''}</textarea></div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-outline" onclick="closeModal()">إلغاء</button>
-        <button type="submit" class="btn btn-primary">💾 حفظ</button>
+      <div class="form-group"><label>${t('property')}</label>
+        <select name="property_id"><option value="">${t('chooseProp')}</option>
+          ${properties.map(p=>`<option value="${p.id}" ${d.property_id==p.id?'selected':''}>${p.title}</option>`).join('')}
+        </select>
       </div>
-    </form>
-  `;
+      <div class="form-group"><label>${t('stage')}</label>
+        <select name="stage">${STAGES.map(s=>`<option value="${s}" ${(d.stage||'جديد')===s?'selected':''}>${LANG==='en'?(STAGES_EN[s]||s):s}</option>`).join('')}</select>
+      </div>
+      <div class="form-group"><label>${t('agent')}</label>
+        <select name="assigned_to"><option value="">${t('chooseAgent')}</option>
+          ${agents.map(a=>`<option value="${a.id}" ${d.assigned_to==a.id?'selected':''}>${a.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group"><label>${t('value')}</label><input name="value" type="number" value="${d.value||''}"></div>
+      <div class="form-group"><label>${t('commission')}</label><input name="commission_pct" type="number" step="0.1" value="${d.commission_pct||'2.5'}"></div>
+      <div class="form-group"><label>${t('closeDate')}</label><input name="expected_close" type="date" value="${d.expected_close||''}"></div>
+    </div>
+    <div class="form-group" style="margin-top:14px"><label>${t('notes')}</label><textarea name="notes">${d.notes||''}</textarea></div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+      <button type="submit" class="btn btn-primary">${t('save')}</button>
+    </div>
+  </form>`;
 }
 
-async function saveDeal(e) {
+async function saveDeal(e){
   e.preventDefault();
-  const fd = new FormData(e.target);
-  const data = Object.fromEntries(fd);
-  if (data.value) data.value = parseFloat(data.value);
-  if (data.commission_pct) data.commission_pct = parseFloat(data.commission_pct);
-  if (!data.contact_id) delete data.contact_id;
-  if (!data.property_id) delete data.property_id;
-  if (!data.assigned_to) delete data.assigned_to;
-  try {
-    if (editingId) await api('PUT', '/deals/' + editingId, data);
-    else await api('POST', '/deals', data);
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  if(data.value) data.value=parseFloat(data.value);
+  if(data.commission_pct) data.commission_pct=parseFloat(data.commission_pct);
+  if(!data.contact_id) delete data.contact_id;
+  if(!data.property_id) delete data.property_id;
+  if(!data.assigned_to) delete data.assigned_to;
+  try{
+    if(editingId) await api('PUT','/deals/'+editingId,data);
+    else await api('POST','/deals',data);
     closeModal(); renderDeals();
-  } catch(err) { alert(err.message); }
+  }catch(err){ showToast(err.message,'error'); }
 }
 
-async function editDeal(id) {
-  const {deals} = await api('GET', '/deals');
-  const d = deals.find(x => x.id === id);
-  if (!d) return;
-  editingId = id;
-  openModal('تعديل الصفقة', await dealForm(d));
+async function editDeal(id){
+  const {deals}=await api('GET','/deals');
+  const d=deals.find(x=>x.id===id); if(!d) return;
+  editingId=id; openModal(t('editDeal'),await dealForm(d));
+}
+async function deleteDeal(id){
+  if(!confirm(t('confirmDelete'))) return;
+  await api('DELETE','/deals/'+id); renderDeals();
 }
 
-async function deleteDeal(id) {
-  if (!confirm('حذف الصفقة؟')) return;
-  await api('DELETE', '/deals/' + id);
-  renderDeals();
-}
-
-// ── PROPERTIES ────────────────────────────────────────────────────────────
-async function renderProperties() {
-  const {properties} = await api('GET', '/properties');
-  const typeIcon = {شقة:'🏢',فيلا:'🏡',أرض:'🌍',تجاري:'🏪',مكتب:'🏦'};
-  document.getElementById('content').innerHTML = `
-    ${properties.length ? `
-    <div class="prop-grid">
-      ${properties.map(p => `
+// ── PROPERTIES ──────────────────────────────────────────────────────────────
+async function renderProperties(){
+  const {properties}=await api('GET','/properties');
+  const ico={شقة:'🏢',فيلا:'🏡',أرض:'🌍',تجاري:'🏪',مكتب:'🏦'};
+  document.getElementById('content').innerHTML=`
+    <div class="page-enter">
+      ${properties.length?`<div class="prop-grid">${properties.map(p=>`
         <div class="prop-card">
-          <div class="prop-thumb">${typeIcon[p.type]||'🏠'}</div>
+          <div class="prop-thumb">${ico[p.type]||'🏠'}</div>
           <div class="prop-body">
             <div class="prop-title">${p.title}</div>
             <div class="prop-price">${formatSAR(p.price)}</div>
             <div class="prop-meta">
               <span>📍 ${p.city||''} ${p.neighborhood||''}</span>
-              <span>${p.area ? p.area + ' م²' : ''}</span>
-              ${p.bedrooms ? `<span>🛏 ${p.bedrooms}</span>` : ''}
+              ${p.area?`<span>${p.area} م²</span>`:''}
+              ${p.bedrooms?`<span>🛏 ${p.bedrooms}</span>`:''}
               ${statusBadge(p.status)}
             </div>
           </div>
           <div class="prop-actions">
-            <button class="btn btn-outline btn-sm" style="flex:1" onclick="editProperty(${p.id})">تعديل</button>
+            <button class="btn btn-outline btn-sm" style="flex:1" onclick="editProperty(${p.id})">${t('edit')}</button>
             <button class="btn btn-danger btn-sm btn-icon" onclick="deleteProperty(${p.id})">🗑️</button>
           </div>
-        </div>
-      `).join('')}
-    </div>` : `<div class="empty"><div class="emoji">🏠</div><h3>لا يوجد عقارات</h3><p>أضف أول عقار الآن</p></div>`}
-  `;
+        </div>`).join('')}</div>`:
+        `<div class="empty"><div class="emoji">🏠</div><h3>${t('noProperties')}</h3></div>`}
+    </div>`;
 }
 
-function propertyForm(p={}) {
-  return `
-    <form onsubmit="saveProperty(event)">
-      <div class="form-grid">
-        <div class="form-group" style="grid-column:1/-1"><label>عنوان العقار *</label><input name="title" value="${p.title||''}" required></div>
-        <div class="form-group"><label>النوع</label>
-          <select name="type">${['شقة','فيلا','أرض','تجاري','مكتب'].map(t=>`<option ${(p.type||'شقة')===t?'selected':''}>${t}</option>`).join('')}</select>
-        </div>
-        <div class="form-group"><label>الحالة</label>
-          <select name="status">${['متاح','محجوز','مباع'].map(s=>`<option ${(p.status||'متاح')===s?'selected':''}>${s}</option>`).join('')}</select>
-        </div>
-        <div class="form-group"><label>السعر (ريال)</label><input name="price" type="number" value="${p.price||''}"></div>
-        <div class="form-group"><label>المساحة (م²)</label><input name="area" type="number" value="${p.area||''}"></div>
-        <div class="form-group"><label>غرف النوم</label><input name="bedrooms" type="number" value="${p.bedrooms||''}"></div>
-        <div class="form-group"><label>دورات المياه</label><input name="bathrooms" type="number" value="${p.bathrooms||''}"></div>
-        <div class="form-group"><label>المدينة</label><input name="city" value="${p.city||''}"></div>
-        <div class="form-group"><label>الحي</label><input name="neighborhood" value="${p.neighborhood||''}"></div>
+function propertyForm(p={}){
+  return `<form onsubmit="saveProperty(event)">
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1"><label>${t('propTitle')} *</label><input name="title" value="${p.title||''}" required></div>
+      <div class="form-group"><label>${t('type')}</label>
+        <select name="type">${['شقة','فيلا','أرض','تجاري','مكتب'].map(tp=>`<option ${(p.type||'شقة')===tp?'selected':''}>${tp}</option>`).join('')}</select>
       </div>
-      <div class="form-group" style="margin-top:14px"><label>وصف</label><textarea name="description">${p.description||''}</textarea></div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-outline" onclick="closeModal()">إلغاء</button>
-        <button type="submit" class="btn btn-primary">💾 حفظ</button>
+      <div class="form-group"><label>${t('status')}</label>
+        <select name="status">${['متاح','محجوز','مباع'].map(s=>`<option ${(p.status||'متاح')===s?'selected':''}>${s}</option>`).join('')}</select>
       </div>
-    </form>
-  `;
+      <div class="form-group"><label>${t('price')}</label><input name="price" type="number" value="${p.price||''}"></div>
+      <div class="form-group"><label>${t('sqm')}</label><input name="area" type="number" value="${p.area||''}"></div>
+      <div class="form-group"><label>${t('beds')}</label><input name="bedrooms" type="number" value="${p.bedrooms||''}"></div>
+      <div class="form-group"><label>${t('baths')}</label><input name="bathrooms" type="number" value="${p.bathrooms||''}"></div>
+      <div class="form-group"><label>${t('city')}</label><input name="city" value="${p.city||''}"></div>
+      <div class="form-group"><label>${t('neighborhood')}</label><input name="neighborhood" value="${p.neighborhood||''}"></div>
+    </div>
+    <div class="form-group" style="margin-top:14px"><label>${t('description')}</label><textarea name="description">${p.description||''}</textarea></div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+      <button type="submit" class="btn btn-primary">${t('save')}</button>
+    </div>
+  </form>`;
 }
 
-async function saveProperty(e) {
+async function saveProperty(e){
   e.preventDefault();
-  const fd = new FormData(e.target);
-  const data = Object.fromEntries(fd);
-  if (data.price) data.price = parseFloat(data.price);
-  if (data.area) data.area = parseFloat(data.area);
-  if (data.bedrooms) data.bedrooms = parseInt(data.bedrooms);
-  if (data.bathrooms) data.bathrooms = parseInt(data.bathrooms);
-  try {
-    if (editingId) await api('PUT', '/properties/' + editingId, data);
-    else await api('POST', '/properties', data);
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  if(data.price) data.price=parseFloat(data.price);
+  if(data.area) data.area=parseFloat(data.area);
+  if(data.bedrooms) data.bedrooms=parseInt(data.bedrooms);
+  if(data.bathrooms) data.bathrooms=parseInt(data.bathrooms);
+  try{
+    if(editingId) await api('PUT','/properties/'+editingId,data);
+    else await api('POST','/properties',data);
     closeModal(); renderProperties();
-  } catch(err) { alert(err.message); }
+  }catch(err){ showToast(err.message,'error'); }
+}
+async function editProperty(id){
+  const {properties}=await api('GET','/properties');
+  const p=properties.find(x=>x.id===id); if(!p) return;
+  editingId=id; openModal(t('editProperty'),propertyForm(p));
+}
+async function deleteProperty(id){
+  if(!confirm(t('confirmDelete'))) return;
+  await api('DELETE','/properties/'+id); renderProperties();
 }
 
-async function editProperty(id) {
-  const {properties} = await api('GET', '/properties');
-  const p = properties.find(x => x.id === id);
-  if (!p) return;
-  editingId = id;
-  openModal('تعديل العقار', propertyForm(p));
-}
+// ── FOLLOW-UPS ──────────────────────────────────────────────────────────────
+async function renderFollowups(){
+  const {followups}=await api('GET','/followups');
+  const today=new Date().toISOString().split('T')[0];
+  const overdue=followups.filter(f=>f.due_date<today);
+  const todayF=followups.filter(f=>f.due_date===today);
+  const upcoming=followups.filter(f=>f.due_date>today);
 
-async function deleteProperty(id) {
-  if (!confirm('حذف العقار؟')) return;
-  await api('DELETE', '/properties/' + id);
-  renderProperties();
-}
-
-// ── FOLLOW-UPS ────────────────────────────────────────────────────────────
-async function renderFollowups() {
-  const {followups} = await api('GET', '/followups');
-  const today = new Date().toISOString().split('T')[0];
-  const overdue = followups.filter(f => f.due_date < today);
-  const todayF  = followups.filter(f => f.due_date === today);
-  const upcoming = followups.filter(f => f.due_date > today);
-
-  function fRow(f) {
-    const isOverdue = f.due_date < today;
-    return `
-      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
-        <div class="avatar" style="width:38px;height:38px;font-size:14px;flex-shrink:0">${(f.contact_name||'؟').charAt(0)}</div>
-        <div style="flex:1">
-          <div style="font-weight:700">${f.contact_name||'بدون عميل'}</div>
-          ${f.note ? `<div style="font-size:13px;color:var(--gray)">${f.note}</div>` : ''}
-          <div style="font-size:12px;color:${isOverdue?'var(--red)':'var(--orange)'};font-weight:600;margin-top:2px">
-            ${isOverdue?'⚠️ متأخر: ':''} ${formatDate(f.due_date)}
-          </div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-green btn-sm" onclick="doneFollowup(${f.id})">تم ✓</button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteFollowup(${f.id})">🗑️</button>
+  function fRow(f){
+    const late=f.due_date<today;
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div class="avatar" style="width:38px;height:38px;font-size:14px;flex-shrink:0">${(f.contact_name||'?').charAt(0)}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;color:var(--text)">${f.contact_name||'—'}</div>
+        ${f.note?`<div style="font-size:13px;color:var(--text-2)">${f.note}</div>`:''}
+        <div style="font-size:12px;color:${late?'var(--red)':'var(--orange)'};font-weight:600;margin-top:2px">
+          ${late?t('lateLabel')+' ':''}${formatDate(f.due_date)}
         </div>
       </div>
-    `;
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-green btn-sm" onclick="doneFollowup(${f.id})">${t('done')}</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteFollowup(${f.id})">🗑️</button>
+      </div>
+    </div>`;
   }
 
-  document.getElementById('content').innerHTML = `
-    ${overdue.length ? `
-    <div class="card" style="margin-bottom:20px;border-color:var(--red)">
-      <div class="card-header"><h3 style="color:var(--red)">⚠️ متأخرة (${overdue.length})</h3></div>
-      <div class="card-body">${overdue.map(fRow).join('')}</div>
-    </div>` : ''}
-
-    <div class="card" style="margin-bottom:20px">
-      <div class="card-header"><h3>📅 اليوم (${todayF.length})</h3></div>
-      <div class="card-body">
-        ${todayF.length ? todayF.map(fRow).join('') : '<div class="empty" style="padding:20px"><div>🎉 لا تذكيرات اليوم!</div></div>'}
+  document.getElementById('content').innerHTML=`
+    <div class="page-enter">
+      ${overdue.length?`<div class="card" style="margin-bottom:20px;border-color:var(--red)">
+        <div class="card-header"><h3 style="color:var(--red)">${t('overdue')} (${overdue.length})</h3></div>
+        <div class="card-body">${overdue.map(fRow).join('')}</div>
+      </div>`:''}
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><h3>${t('today')} (${todayF.length})</h3></div>
+        <div class="card-body">${todayF.length?todayF.map(fRow).join(''):`<div class="empty" style="padding:20px"><div>${t('noTodayFU')}</div></div>`}</div>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><h3>🗓️ قادمة (${upcoming.length})</h3></div>
-      <div class="card-body">
-        ${upcoming.length ? upcoming.map(fRow).join('') : '<div class="empty" style="padding:20px"><div>لا تذكيرات قادمة</div></div>'}
+      <div class="card">
+        <div class="card-header"><h3>${t('upcoming')} (${upcoming.length})</h3></div>
+        <div class="card-body">${upcoming.length?upcoming.map(fRow).join(''):`<div class="empty" style="padding:20px"><div>${t('noUpcomingFU')}</div></div>`}</div>
       </div>
-    </div>
-  `;
+    </div>`;
   loadFollowupBadge();
 }
 
-async function doneFollowup(id) {
-  await api('PUT', '/followups/' + id + '/done', {});
-  if (currentPage === 'followups') renderFollowups();
-  else if (currentPage === 'dashboard') renderDashboard();
+async function doneFollowup(id){
+  await api('PUT','/followups/'+id+'/done',{});
+  if(currentPage==='followups') renderFollowups();
+  else if(currentPage==='dashboard') renderDashboard();
   loadFollowupBadge();
 }
-
-async function deleteFollowup(id) {
-  if (!confirm('حذف التذكير؟')) return;
-  await api('DELETE', '/followups/' + id);
-  renderFollowups();
+async function deleteFollowup(id){
+  if(!confirm(t('confirmDelete'))) return;
+  await api('DELETE','/followups/'+id); renderFollowups();
 }
-
-async function followupForm() {
-  const {contacts} = await api('GET', '/contacts');
-  const today = new Date().toISOString().split('T')[0];
-  return `
-    <form onsubmit="saveFollowup(event)">
-      <div class="form-grid">
-        <div class="form-group"><label>العميل</label>
-          <select name="contact_id">
-            <option value="">اختر عميل...</option>
-            ${contacts.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group"><label>تاريخ التذكير *</label><input name="due_date" type="date" value="${today}" required></div>
+async function followupForm(){
+  const {contacts}=await api('GET','/contacts');
+  const today=new Date().toISOString().split('T')[0];
+  return `<form onsubmit="saveFollowup(event)">
+    <div class="form-grid">
+      <div class="form-group"><label>${t('contacts')}</label>
+        <select name="contact_id"><option value="">${t('chooseClient')}</option>
+          ${contacts.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}
+        </select>
       </div>
-      <div class="form-group" style="margin-top:14px"><label>الملاحظة</label><textarea name="note" placeholder="ماذا تريد أن تفعل؟"></textarea></div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-outline" onclick="closeModal()">إلغاء</button>
-        <button type="submit" class="btn btn-primary">💾 حفظ</button>
-      </div>
-    </form>
-  `;
+      <div class="form-group"><label>${t('followupDate')} *</label><input name="due_date" type="date" value="${today}" required></div>
+    </div>
+    <div class="form-group" style="margin-top:14px"><label>${t('followupNote')}</label><textarea name="note"></textarea></div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+      <button type="submit" class="btn btn-primary">${t('save')}</button>
+    </div>
+  </form>`;
 }
-
-async function saveFollowup(e) {
+async function saveFollowup(e){
   e.preventDefault();
-  const fd = new FormData(e.target);
-  const data = Object.fromEntries(fd);
-  if (!data.contact_id) delete data.contact_id;
-  try {
-    await api('POST', '/followups', data);
-    closeModal(); renderFollowups();
-  } catch(err) { alert(err.message); }
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  if(!data.contact_id) delete data.contact_id;
+  try{ await api('POST','/followups',data); closeModal(); renderFollowups(); }
+  catch(err){ showToast(err.message,'error'); }
 }
 
-// ── TEAM ──────────────────────────────────────────────────────────────────
-async function renderTeam() {
-  const {agents} = await api('GET', '/team');
-  document.getElementById('content').innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
-      ${agents.map(a => `
-        <div class="agent-card">
-          <div class="agent-avatar">${a.name.charAt(0)}</div>
-          <div class="agent-info">
-            <div class="agent-name">${a.name} ${a.role==='admin'?'<span class="badge badge-blue" style="font-size:10px">مدير</span>':''}</div>
-            <div class="agent-email">${a.email}</div>
-            ${a.phone ? `<div class="agent-email">📱 ${a.phone}</div>` : ''}
-            <div class="agent-stats">
-              <div class="agent-stat"><strong>${a.contact_count}</strong>عميل</div>
-              <div class="agent-stat"><strong>${a.open_deals}</strong>صفقة مفتوحة</div>
-              <div class="agent-stat"><strong>${a.closed_month}</strong>مغلقة هذا الشهر</div>
+// ── TEAM ────────────────────────────────────────────────────────────────────
+async function renderTeam(){
+  const {agents}=await api('GET','/team');
+  document.getElementById('content').innerHTML=`
+    <div class="page-enter">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+        ${agents.map(a=>`
+          <div class="agent-card">
+            <div class="agent-avatar">${a.name.charAt(0)}</div>
+            <div class="agent-info">
+              <div class="agent-name">${a.name} ${a.role==='admin'?`<span class="badge badge-blue" style="font-size:10px">${t('adminBadge')}</span>`:''}</div>
+              <div class="agent-email">${a.email}</div>
+              ${a.phone?`<div class="agent-email">📱 ${a.phone}</div>`:''}
+              <div class="agent-stats">
+                <div class="agent-stat"><strong>${a.contact_count}</strong>${t('contactCount')}</div>
+                <div class="agent-stat"><strong>${a.open_deals}</strong>${t('openDealsLabel')}</div>
+                <div class="agent-stat"><strong>${a.closed_month}</strong>${t('closedLabel')}</div>
+              </div>
             </div>
-          </div>
-          ${a.id !== currentUser.id ? `
-          <button class="btn ${a.is_active?'btn-danger':'btn-green'} btn-sm"
-            onclick="toggleAgent(${a.id},${a.is_active?0:1})">
-            ${a.is_active?'إيقاف':'تفعيل'}
-          </button>` : ''}
-        </div>
-      `).join('')}
+            ${a.id!==currentUser.id?`
+            <button class="btn ${a.is_active?'btn-danger':'btn-green'} btn-sm"
+              onclick="toggleAgent(${a.id},${a.is_active?0:1})">
+              ${a.is_active?t('deactivate'):t('activate')}
+            </button>`:''}
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function agentForm(){
+  return `<form onsubmit="saveAgent(event)">
+    <div class="form-grid">
+      <div class="form-group"><label>${t('name')} *</label><input name="name" required></div>
+      <div class="form-group"><label>${t('email')} *</label><input name="email" type="email" required></div>
+      <div class="form-group"><label>${t('phone')}</label><input name="phone" placeholder="05xxxxxxxx"></div>
     </div>
-  `;
+    <div style="background:var(--blue-l);color:var(--blue);border-radius:8px;padding:12px;margin-top:14px;font-size:13px">${t('defaultPwHint')}</div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+      <button type="submit" class="btn btn-primary">${t('invite')}</button>
+    </div>
+  </form>`;
 }
-
-function agentForm() {
-  return `
-    <form onsubmit="saveAgent(event)">
-      <div class="form-grid">
-        <div class="form-group"><label>الاسم *</label><input name="name" required></div>
-        <div class="form-group"><label>البريد الإلكتروني *</label><input name="email" type="email" required></div>
-        <div class="form-group"><label>الجوال</label><input name="phone" placeholder="05xxxxxxxx"></div>
-      </div>
-      <div class="alert" style="background:var(--blue-l);color:var(--blue);border-radius:8px;padding:12px;margin-top:14px;font-size:13px">
-        💡 كلمة المرور الافتراضية هي رقم جواله، أو "Waseet123" إذا لم يُدخل جوالاً.
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-outline" onclick="closeModal()">إلغاء</button>
-        <button type="submit" class="btn btn-primary">✉️ دعوة</button>
-      </div>
-    </form>
-  `;
-}
-
-async function saveAgent(e) {
+async function saveAgent(e){
   e.preventDefault();
-  const fd = new FormData(e.target);
-  const data = Object.fromEntries(fd);
-  try {
-    const res = await api('POST', '/team', data);
-    alert(res.message);
-    closeModal(); renderTeam();
-  } catch(err) { alert(err.message); }
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  try{ const res=await api('POST','/team',data); showToast(res.message); closeModal(); renderTeam(); }
+  catch(err){ showToast(err.message,'error'); }
+}
+async function toggleAgent(id,isActive){ await api('PUT','/team/'+id+'/toggle',{is_active:isActive}); renderTeam(); }
+
+// ── PROFILE ─────────────────────────────────────────────────────────────────
+function renderProfile(){
+  const u=currentUser, a=currentAgency;
+  const days=a.trial_ends?Math.ceil((new Date(a.trial_ends)-new Date())/86400000):0;
+  document.getElementById('content').innerHTML=`
+    <div class="page-enter" style="max-width:640px;margin:0 auto">
+      <div class="card" style="margin-bottom:20px">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar">${u.name.charAt(0).toUpperCase()}</div>
+          <div class="profile-name">${u.name}</div>
+          <div class="profile-email">${u.email}</div>
+          <span class="badge ${u.role==='admin'?'badge-blue':'badge-gray'}" style="font-size:13px">
+            ${u.role==='admin'?t('adminBadge'):t('agentRole')}
+          </span>
+          <div class="profile-agency">
+            🏢 ${a.name} &nbsp;•&nbsp;
+            ${a.plan==='trial'?`${t('trial')} — ${days>0?days+' '+t('daysLeft'):t('trialExpired')}`:a.plan}
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-header"><h3>✏️ ${t('editProfile')}</h3></div>
+        <div class="card-body">
+          <form onsubmit="saveProfile(event)">
+            <div class="form-grid">
+              <div class="form-group"><label>${t('name')} *</label><input name="name" value="${u.name||''}" required></div>
+              <div class="form-group"><label>${t('phone')}</label><input name="phone" value="${u.phone||''}" placeholder="05xxxxxxxx"></div>
+              <div class="form-group" style="grid-column:1/-1"><label>${t('email')}</label>
+                <input value="${u.email||''}" disabled style="background:var(--bg);opacity:.7"></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">${t('save')}</button></div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>🔐 ${t('changePassword')}</h3></div>
+        <div class="card-body">
+          <form onsubmit="savePassword(event)">
+            <div class="form-grid">
+              <div class="form-group"><label>${t('currentPassword')}</label><input name="old_password" type="password" required></div>
+              <div class="form-group"><label>${t('newPassword')}</label><input name="new_password" type="password" required minlength="6"></div>
+            </div>
+            <div class="form-actions"><button type="submit" class="btn btn-outline">${t('changePassword')}</button></div>
+          </form>
+        </div>
+      </div>
+    </div>`;
 }
 
-async function toggleAgent(id, isActive) {
-  await api('PUT', '/team/' + id + '/toggle', {is_active: isActive});
-  renderTeam();
+async function saveProfile(e){
+  e.preventDefault();
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  try{
+    await api('PUT','/profile',data);
+    currentUser.name=data.name; currentUser.phone=data.phone;
+    document.getElementById('user-name').textContent=data.name;
+    document.getElementById('user-avatar').textContent=data.name.charAt(0).toUpperCase();
+    showToast(t('profileSaved'));
+  }catch(err){ showToast(err.message,'error'); }
 }
 
-// ── SETTINGS ──────────────────────────────────────────────────────────────
-function renderSettings() {
-  const agency = currentAgency;
-  const user = currentUser;
-  const days = agency.trial_ends ? Math.ceil((new Date(agency.trial_ends) - new Date()) / 86400000) : 0;
-  document.getElementById('content').innerHTML = `
-    <div style="max-width:640px">
+async function savePassword(e){
+  e.preventDefault();
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  try{ await api('PUT','/profile',data); showToast(t('passwordChanged')); e.target.reset(); }
+  catch(err){ showToast(err.message,'error'); }
+}
+
+// ── SETTINGS ────────────────────────────────────────────────────────────────
+function renderSettings(){
+  const a=currentAgency,u=currentUser;
+  const days=a.trial_ends?Math.ceil((new Date(a.trial_ends)-new Date())/86400000):0;
+  document.getElementById('content').innerHTML=`
+    <div class="page-enter" style="max-width:640px">
       <div class="settings-section">
         <div class="plan-card">
-          <div class="plan-name">${agency.plan === 'trial' ? '🔄 فترة التجربة المجانية' : '✅ ' + agency.plan}</div>
-          ${agency.plan === 'trial' ? `<div class="plan-expires">${days > 0 ? days + ' يوم متبقي من أصل 30 يوماً' : 'انتهت فترة التجربة'}</div>` : ''}
-          <div class="plan-upgrade">
-            <button class="btn btn-white" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)" onclick="alert('سيتم تفعيل الدفع قريباً. تواصل معنا على واتساب لترقية حسابك.')">
-              ⬆️ ترقية الخطة
+          <div class="plan-name">${a.plan==='trial'?'🔄 '+t('trial'):'✅ '+a.plan}</div>
+          ${a.plan==='trial'?`<div style="font-size:14px;opacity:.8">${days>0?days+' '+t('daysLeft'):t('trialExpired')}</div>`:''}
+          <div style="margin-top:16px">
+            <button class="btn" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)"
+              onclick="showToast('${LANG==='ar'?'سيتم تفعيل الدفع قريباً. تواصل معنا على واتساب.':'Payment coming soon. Contact us on WhatsApp.'}')">
+              ${t('upgradePlan')}
             </button>
           </div>
         </div>
       </div>
-
       <div class="settings-section">
-        <h3>معلومات الوكالة</h3>
+        <h3>${t('agencyInfo')}</h3>
         <div class="form-grid">
-          <div class="form-group"><label>اسم الوكالة</label><input value="${agency.name||''}" disabled style="background:var(--bg)"></div>
-          <div class="form-group"><label>الخطة الحالية</label><input value="${agency.plan||''}" disabled style="background:var(--bg)"></div>
+          <div class="form-group"><label>${t('agencyName')}</label><input value="${a.name||''}" disabled style="background:var(--bg)"></div>
+          <div class="form-group"><label>${t('currentPlan')}</label><input value="${a.plan||''}" disabled style="background:var(--bg)"></div>
         </div>
       </div>
-
       <div class="settings-section">
-        <h3>معلوماتك الشخصية</h3>
-        <form onsubmit="event.preventDefault();alert('تم الحفظ!')">
-          <div class="form-grid">
-            <div class="form-group"><label>الاسم</label><input name="name" value="${user.name||''}"></div>
-            <div class="form-group"><label>البريد الإلكتروني</label><input value="${user.email||''}" disabled style="background:var(--bg)"></div>
-            <div class="form-group"><label>الجوال</label><input name="phone" value="${user.phone||''}"></div>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">💾 حفظ</button>
-          </div>
-        </form>
-      </div>
-
-      <div class="settings-section">
-        <h3>الدعم والتواصل</h3>
+        <h3>${t('support')}</h3>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <a href="https://wa.me/966541482208" target="_blank" class="btn btn-green">📱 واتساب الدعم</a>
-          <a href="mailto:support@waseetcrm.com" class="btn btn-outline">✉️ البريد الإلكتروني</a>
+          <a href="https://wa.me/966541482208" target="_blank" class="btn btn-green">${t('whatsappSupport')}</a>
+          <a href="mailto:support@waseetcrm.com" class="btn btn-outline">${t('emailSupport')}</a>
         </div>
       </div>
-
       <div class="settings-section">
-        <h3>رابط نموذج العملاء</h3>
-        <p style="font-size:14px;color:var(--gray);margin-bottom:12px">أرسل هذا الرابط لعملاءك ليسجلوا بياناتهم مباشرة في نظامك:</p>
+        <h3>${t('leadForm')}</h3>
+        <p style="font-size:14px;color:var(--text-2);margin-bottom:12px">${t('leadFormHint')}</p>
         <div style="display:flex;gap:8px;align-items:center">
-          <input value="${window.location.origin}/lead.html" style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px" id="lead-link" readonly>
-          <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('lead-link').value);alert('تم النسخ!')">نسخ</button>
+          <input id="lead-link" value="${window.location.origin}/lead.html" readonly
+            style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text)">
+          <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('lead-link').value);showToast(t('copied'))">${t('copy')}</button>
         </div>
       </div>
-    </div>
-  `;
+    </div>`;
 }
 
-// ── MODAL ─────────────────────────────────────────────────────────────────
-function openModal(title, html) {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').innerHTML = html;
+// ── MODAL ───────────────────────────────────────────────────────────────────
+function openModal(title,html){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=html;
   document.getElementById('modal').classList.add('open');
 }
+function closeModal(){ document.getElementById('modal').classList.remove('open'); editingId=null; }
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target===document.getElementById('modal')) closeModal(); });
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-  editingId = null;
-}
-
-document.getElementById('modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal')) closeModal();
-});
-
-async function openAddModal() {
-  editingId = null;
-  switch(currentPage) {
-    case 'contacts':   openModal('عميل جديد', contactForm()); break;
-    case 'deals':      openModal('صفقة جديدة', await dealForm()); break;
-    case 'properties': openModal('عقار جديد', propertyForm()); break;
-    case 'followups':  openModal('تذكير جديد', await followupForm()); break;
-    case 'team':       openModal('دعوة وسيط', agentForm()); break;
+async function openAddModal(){
+  editingId=null;
+  switch(currentPage){
+    case 'contacts':   openModal(t('newContact'),contactForm()); break;
+    case 'deals':      openModal(t('newDeal'),await dealForm()); break;
+    case 'properties': openModal(t('newProperty'),propertyForm()); break;
+    case 'followups':  openModal(t('newFollowup'),await followupForm()); break;
+    case 'team':       openModal(t('inviteAgent'),agentForm()); break;
   }
 }
 
-// ── UTILS ─────────────────────────────────────────────────────────────────
-function formatSAR(n) {
-  if (!n && n !== 0) return '—';
-  return Number(n).toLocaleString('ar-SA') + ' ريال';
+// ── TOAST ───────────────────────────────────────────────────────────────────
+function showToast(msg,type='success'){
+  document.querySelectorAll('.toast').forEach(el=>el.remove());
+  const el=document.createElement('div');
+  el.className=`toast toast-${type}`;
+  el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.classList.add('show'),10);
+  setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(),300); },3000);
 }
 
-function formatDate(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('ar-SA', {year:'numeric',month:'short',day:'numeric'});
+// ── UTILS ───────────────────────────────────────────────────────────────────
+function formatSAR(n){
+  if(!n && n!==0) return '—';
+  return LANG==='en'?'SAR '+Number(n).toLocaleString('en-US'):Number(n).toLocaleString('ar-SA')+' ريال';
+}
+function formatDate(d){
+  if(!d) return '—';
+  return new Date(d).toLocaleDateString(LANG==='en'?'en-US':'ar-SA',{year:'numeric',month:'short',day:'numeric'});
+}
+function statusLabel(s){ return STATUS_LABELS[LANG]?.[s]||s; }
+function statusBadge(s){
+  const m={'جديد':'badge-blue','متابعة':'badge-orange','مهتم':'badge-green','غير مهتم':'badge-red','مغلق':'badge-gray','متاح':'badge-green','محجوز':'badge-orange','مباع':'badge-gray'};
+  return `<span class="badge ${m[s]||'badge-gray'}">${statusLabel(s)||'—'}</span>`;
 }
 
-function statusBadge(status) {
-  const map = {
-    'جديد':'badge-blue', 'متابعة':'badge-orange', 'مهتم':'badge-green',
-    'غير مهتم':'badge-red', 'مغلق':'badge-gray',
-    'متاح':'badge-green', 'محجوز':'badge-orange', 'مباع':'badge-gray',
-  };
-  return `<span class="badge ${map[status]||'badge-gray'}">${status||'—'}</span>`;
-}
-
-// ── BOOT ──────────────────────────────────────────────────────────────────
 initApp();
 </script>
 </body>

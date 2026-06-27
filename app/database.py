@@ -487,6 +487,31 @@ def toggle_agent(user_id, agency_id, is_active):
     finally:
         conn.close()
 
+def update_profile(user_id, data):
+    """Update user's own name/phone and optionally their password."""
+    conn = get_db()
+    try:
+        # Update name/phone
+        if data.get("name"):
+            conn.execute("UPDATE users SET name=?, phone=? WHERE id=?",
+                         (data["name"], data.get("phone",""), user_id))
+            conn.commit()
+        # Change password if provided
+        if data.get("old_password") and data.get("new_password"):
+            row = conn.execute("SELECT password_hash FROM users WHERE id=?", (user_id,)).fetchone()
+            if not row:
+                return False, "المستخدم غير موجود"
+            if not check_password(row["password_hash"], data["old_password"]):
+                return False, "كلمة المرور الحالية غير صحيحة"
+            _salt = secrets.token_hex(16)
+            pw_hash = "pbkdf2:" + _salt + ":" + hashlib.pbkdf2_hmac(
+                "sha256", data["new_password"].encode(), _salt.encode(), 260000).hex()
+            conn.execute("UPDATE users SET password_hash=? WHERE id=?", (pw_hash, user_id))
+            conn.commit()
+        return True, "تم الحفظ"
+    finally:
+        conn.close()
+
 def get_agency(agency_id):
     conn = get_db()
     try:
