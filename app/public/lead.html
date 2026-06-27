@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>تسجيل بياناتك — وسيط CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:#F3F6FB;min-height:100vh;padding:24px 16px;color:#1A1A1A}
+.container{max-width:480px;margin:0 auto}
+.header{text-align:center;margin-bottom:28px}
+.logo{display:inline-flex;align-items:center;gap:10px;background:#1B4F8C;color:#fff;padding:10px 20px;border-radius:12px;margin-bottom:16px}
+.logo .icon{width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px}
+.logo span{font-size:16px;font-weight:700}
+h1{font-size:22px;font-weight:900;color:#1B4F8C}
+p{color:#6B7280;font-size:14px;margin-top:6px}
+.card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 16px rgba(27,79,140,.08);border:1px solid #E5E7EB}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:700;color:#6B7280;margin-bottom:6px}
+.form-group input,.form-group select{width:100%;border:1.5px solid #E5E7EB;border-radius:10px;padding:11px 14px;font-size:15px;font-family:'Cairo',sans-serif;color:#1A1A1A}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#1B4F8C}
+.btn{width:100%;padding:14px;background:#1D7A4E;color:#fff;border:none;border-radius:10px;font-size:17px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;margin-top:4px}
+.btn:hover{background:#145c39}
+.success{text-align:center;padding:40px 20px;display:none}
+.success .emoji{font-size:64px;margin-bottom:16px}
+.success h2{font-size:22px;font-weight:900;color:#1D7A4E;margin-bottom:8px}
+.success p{color:#6B7280;font-size:15px}
+.error{background:#FEE2E2;color:#DC2626;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:14px;display:none}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo"><div class="icon">و</div><span>وسيط CRM</span></div>
+    <h1>سجّل بياناتك</h1>
+    <p>أدخل بياناتك وسيتواصل معك أحد وسطائنا في أقرب وقت</p>
+  </div>
+  <div class="card" id="form-card">
+    <div id="error" class="error"></div>
+    <form onsubmit="submitLead(event)">
+      <div class="form-group"><label>الاسم الكامل *</label><input name="name" required placeholder="اسمك"></div>
+      <div class="form-group"><label>رقم الجوال (واتساب) *</label><input name="phone" required placeholder="05xxxxxxxx"></div>
+      <div class="form-group"><label>ماذا تبحث عن؟</label>
+        <select name="property_type">
+          <option value="">اختر...</option>
+          <option>شقة</option><option>فيلا</option><option>أرض</option>
+          <option>تجاري</option><option>مكتب</option>
+        </select>
+      </div>
+      <div class="form-group"><label>ميزانيتك التقريبية (ريال)</label>
+        <select name="budget_max">
+          <option value="">اختر...</option>
+          <option value="500000">أقل من 500,000</option>
+          <option value="1000000">500,000 – 1,000,000</option>
+          <option value="2000000">1,000,000 – 2,000,000</option>
+          <option value="5000000">أكثر من 2,000,000</option>
+        </select>
+      </div>
+      <div class="form-group"><label>المدينة / الحي المفضل</label>
+        <input name="preferred_area" placeholder="مثال: الرياض — الملقا"></div>
+      <button type="submit" class="btn">✅ أرسل بياناتك</button>
+    </form>
+  </div>
+  <div class="success" id="success-card">
+    <div class="emoji">🎉</div>
+    <h2>شكراً لك!</h2>
+    <p>تم استلام بياناتك. سيتواصل معك أحد وسطائنا قريباً على واتساب.</p>
+  </div>
+</div>
+
+<script>
+// Get agency token from URL: /lead.html?agency=XXX
+// For now, submits to the default endpoint
+async function submitLead(e) {
+  e.preventDefault();
+  document.getElementById('error').style.display = 'none';
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd);
+  data.source = 'نموذج الموقع';
+  data.status = 'جديد';
+  if (data.budget_max) data.budget_max = parseFloat(data.budget_max);
+  try {
+    const res = await fetch('/api/contacts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // Use a lead token if agency provides one in URL
+        'Authorization': 'Bearer ' + (new URLSearchParams(window.location.search).get('token') || '')
+      },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.error);
+    document.getElementById('form-card').style.display = 'none';
+    document.getElementById('success-card').style.display = 'block';
+  } catch(err) {
+    const el = document.getElementById('error');
+    el.textContent = err.message || 'حدث خطأ، يرجى المحاولة مرة أخرى';
+    el.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>

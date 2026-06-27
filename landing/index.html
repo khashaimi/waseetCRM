@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>وسيط CRM — نظام إدارة العملاء للوسطاء العقاريين</title>
+  <meta name="description" content="نظام CRM عربي مصمم خصيصاً لوسطاء العقار في السعودية. تتبع عملاءك وصفقاتك مباشرة من واتساب.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #1B4F8C;
+      --blue-dark: #133a68;
+      --blue-light: #D6E4F5;
+      --green: #1D7A4E;
+      --green-light: #D6EDE0;
+      --text: #1A1A1A;
+      --gray: #555555;
+      --light: #F7F9FC;
+      --white: #FFFFFF;
+      --border: #E2E8F0;
+      --shadow: 0 4px 24px rgba(27,79,140,0.10);
+      --radius: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.97);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .logo-ar {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    .logo-en {
+      font-size: 10px;
+      color: var(--gray);
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--gray);
+      font-size: 15px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--blue); }
+
+    .nav-cta {
+      background: var(--blue);
+      color: white !important;
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-size: 14px !important;
+      transition: background 0.2s !important;
+    }
+
+    .nav-cta:hover { background: var(--blue-dark) !important; color: white !important; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(145deg, #0d2d52 0%, #1B4F8C 50%, #1a5c3a 100%);
+      color: white;
+      padding: 100px 5% 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.04) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: white;
+      padding: 6px 18px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 28px;
+      backdrop-filter: blur(4px);
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 900;
+      line-height: 1.25;
+      margin-bottom: 20px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero h1 span { color: #6EE7A0; }
+
+    .hero p {
+      font-size: clamp(16px, 2.5vw, 20px);
+      color: rgba(255,255,255,0.80);
+      max-width: 580px;
+      margin: 0 auto 40px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: white;
+      padding: 16px 36px;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover { background: #165e3c; transform: translateY(-2px); }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.12);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.25);
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 60px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 36px;
+      font-weight: 900;
+      color: #6EE7A0;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      color: rgba(255,255,255,0.70);
+      margin-top: 4px;
+    }
+
+    /* ── SECTION COMMON ── */
+    section {
+      padding: 80px 5%;
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 42px);
+      font-weight: 900;
+      color: var(--blue);
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 17px;
+      color: var(--gray);
+      max-width: 580px;
+      margin-bottom: 56px;
+    }
+
+    .text-center { text-align: center; }
+    .text-center .section-sub { margin-left: auto; margin-right: auto; }
+
+    /* ── PAIN SECTION ── */
+    .pain {
+      background: var(--light);
+    }
+
+    .pain-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-top: 8px;
+    }
+
+    .pain-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      position: relative;
+    }
+
+    .pain-emoji {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    .pain-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .pain-card p {
+      font-size: 15px;
+      color: var(--gray);
+    }
+
+    .pain-arrow {
+      text-align: center;
+      font-size: 36px;
+      color: var(--green);
+      margin: 32px 0;
+    }
+
+    /* ── FEATURES ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 28px;
+    }
+
+    .feature-card {
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--blue-light), #c5d8f5);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      font-size: 15px;
+      color: var(--gray);
+      line-height: 1.7;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how {
+      background: linear-gradient(135deg, var(--blue) 0%, #1a3d6e 100%);
+      color: white;
+    }
+
+    .how .section-title { color: white; }
+    .how .section-label { color: #6EE7A0; }
+    .how .section-sub { color: rgba(255,255,255,0.75); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 40px;
+      margin-top: 8px;
+    }
+
+    .step {
+      text-align: center;
+    }
+
+    .step-num {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 900;
+      color: #6EE7A0;
+      margin: 0 auto 20px;
+    }
+
+    .step h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .step p {
+      font-size: 15px;
+      color: rgba(255,255,255,0.70);
+    }
+
+    /* ── PRICING ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      align-items: start;
+    }
+
+    .price-card {
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      text-align: center;
+      transition: box-shadow 0.2s, transform 0.2s;
+      position: relative;
+    }
+
+    .price-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-4px);
+    }
+
+    .price-card.featured {
+      border-color: var(--green);
+      box-shadow: 0 8px 40px rgba(29,122,78,0.18);
+    }
+
+    .featured-badge {
+      position: absolute;
+      top: -14px;
+      right: 50%;
+      transform: translateX(50%);
+      background: var(--green);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 16px;
+      border-radius: 50px;
+      white-space: nowrap;
+    }
+
+    .price-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gray);
+      margin-bottom: 16px;
+    }
+
+    .price-amount {
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--blue);
+      line-height: 1;
+    }
+
+    .price-currency {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--gray);
+    }
+
+    .price-period {
+      font-size: 14px;
+      color: var(--gray);
+      margin-bottom: 24px;
+    }
+
+    .price-features {
+      list-style: none;
+      text-align: right;
+      margin-bottom: 32px;
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+
+    .price-features li {
+      font-size: 15px;
+      color: var(--text);
+      padding: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .price-features li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .btn-plan {
+      display: block;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .btn-plan-outline {
+      border: 2px solid var(--blue);
+      color: var(--blue);
+      background: transparent;
+    }
+
+    .btn-plan-outline:hover {
+      background: var(--blue);
+      color: white;
+    }
+
+    .btn-plan-filled {
+      background: var(--green);
+      color: white;
+    }
+
+    .btn-plan-filled:hover { background: #165e3c; }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials { background: var(--light); }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .testimonial-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+
+    .stars { color: #F59E0B; font-size: 18px; margin-bottom: 14px; }
+
+    .testimonial-text {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.75;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .author-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue), var(--green));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .author-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .author-title {
+      font-size: 13px;
+      color: var(--gray);
+    }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      background: linear-gradient(135deg, var(--green) 0%, #145c39 100%);
+      text-align: center;
+      color: white;
+      padding: 100px 5%;
+    }
+
+    .cta-section h2 {
+      font-size: clamp(30px, 5vw, 52px);
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+
+    .cta-section p {
+      font-size: 18px;
+      color: rgba(255,255,255,0.80);
+      margin-bottom: 40px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn-wa {
+      background: #25D366;
+      color: white;
+      padding: 16px 36px;
+      border-radius: 12px;
+      font-size: 17px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-wa:hover { background: #1aad53; transform: translateY(-2px); }
+
+    .btn-white {
+      background: white;
+      color: var(--green);
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-white:hover { background: #f0fdf4; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #0d2233;
+      color: rgba(255,255,255,0.75);
+      padding: 60px 5% 32px;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1.5fr repeat(3, 1fr);
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    .footer-brand p {
+      font-size: 14px;
+      line-height: 1.8;
+      margin-top: 16px;
+      color: rgba(255,255,255,0.55);
+    }
+
+    .footer-col h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 16px;
+    }
+
+    .footer-col ul { list-style: none; }
+
+    .footer-col li {
+      margin-bottom: 10px;
+    }
+
+    .footer-col a {
+      text-decoration: none;
+      color: rgba(255,255,255,0.55);
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover { color: white; }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-bottom p { font-size: 13px; color: rgba(255,255,255,0.40); }
+
+    /* ── FLOATING WA BUTTON ── */
+    .wa-float {
+      position: fixed;
+      bottom: 28px;
+      left: 28px;
+      width: 60px;
+      height: 60px;
+      background: #25D366;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 28px;
+      text-decoration: none;
+      box-shadow: 0 4px 20px rgba(37,211,102,0.40);
+      z-index: 200;
+      transition: transform 0.2s;
+    }
+
+    .wa-float:hover { transform: scale(1.1); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 0 4%; }
+      .nav-links { display: none; }
+      .hero { padding: 70px 4% 60px; }
+      .hero-stats { gap: 28px; }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      section { padding: 60px 4%; }
+    }
+
+    @media (max-width: 480px) {
+      .footer-top { grid-template-columns: 1fr; }
+      .hero-actions { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-icon">و</div>
+    <div class="logo-text">
+      <span class="logo-ar">وسيط</span>
+      <span class="logo-en">WASEET CRM</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">المميزات</a></li>
+    <li><a href="#how">كيف يعمل</a></li>
+    <li><a href="#pricing">الأسعار</a></li>
+    <li><a href="#cta" class="nav-cta">ابدأ مجاناً</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🏢 مصمم خصيصاً لوسطاء العقار في السعودية</div>
+  <h1>أدر عملاءك وصفقاتك<br><span>بسهولة، من واتساب</span></h1>
+  <p>نظام CRM عربي متكامل يربط واتساب بإدارة العملاء والصفقات. لا إكسيل، لا فوضى، كل شيء في مكان واحد.</p>
+  <div class="hero-actions">
+    <a href="https://wa.me/966541482208?text=أريد%20تجربة%20وسيط%20CRM%20مجاناً" class="btn-primary">
+      📱 ابدأ تجربتك المجانية
+    </a>
+    <a href="#features" class="btn-secondary">
+      تعرف على المميزات ←
+    </a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">30</div>
+      <div class="stat-label">يوم تجربة مجانية</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">+50K</div>
+      <div class="stat-label">وسيط عقاري في السعودية</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">100%</div>
+      <div class="stat-label">باللغة العربية</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0</div>
+      <div class="stat-label">رسوم إعداد</div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN SECTION -->
+<section class="pain">
+  <div class="text-center">
+    <div class="section-label">المشكلة</div>
+    <h2 class="section-title">هل تعاني من هذه المشاكل اليومية؟</h2>
+    <p class="section-sub">أغلب الوسطاء يديرون أعمالهم عبر واتساب وإكسيل — وهذا يكلفهم صفقات كثيرة بدون ما يدرون.</p>
+  </div>
+  <div class="pain-grid">
+    <div class="pain-card">
+      <div class="pain-emoji">😤</div>
+      <h3>عملاء يضيعون في واتساب</h3>
+      <p>رسالة طلب من عميل تضيع بين مئات الرسائل، وتذكرها بعد أسبوع — بعد ما خسرت الصفقة.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">📊</div>
+      <h3>إكسيل معقد وغير محدث</h3>
+      <p>جدول إكسيل مليان بيانات قديمة وغير محدثة، ولا تعرف وين وصلت مع كل عميل.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">🔔</div>
+      <h3>نسيان المتابعة مع العملاء</h3>
+      <p>عميل مهتم ونسيت تتابع معه، فاتصل على منافسك وأغلق الصفقة معاه.</p>
+    </div>
+    <div class="pain-card">
+      <div class="pain-emoji">📋</div>
+      <h3>لا تعرف أداء فريقك</h3>
+      <p>مدير الوكالة لا يعرف كم صفقة في يد كل موظف، ولا في أي مرحلة هي.</p>
+    </div>
+  </div>
+  <div class="pain-arrow">↓</div>
+  <div class="text-center">
+    <h3 style="font-size:22px;color:var(--green);font-weight:800;">وسيط CRM يحل هذه المشاكل كلها، بضغطة واحدة.</h3>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="text-center">
+    <div class="section-label">المميزات</div>
+    <h2 class="section-title">كل ما يحتاجه الوسيط العقاري</h2>
+    <p class="section-sub">نظام بسيط، عربي 100%، يعمل على جوالك مباشرة.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">💬</div>
+      <h3>استقبال عملاء من واتساب</h3>
+      <p>ارسل رابط واحد لعملاءك، يملأون نموذج سريع، ويدخلون مباشرة في نظامك. ما في نسخ ولا لصق.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📈</div>
+      <h3>خط سير الصفقات (Pipeline)</h3>
+      <p>شوف كل صفقاتك دفعة واحدة — من "عميل جديد" إلى "جار التفاوض" إلى "مغلقة". كل شيء واضح.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⏰</div>
+      <h3>تذكيرات المتابعة التلقائية</h3>
+      <p>النظام يذكرك تتابع مع عملاءك في الوقت الصح. ما تنسى أحد بعد اليوم.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🏠</div>
+      <h3>ربط العقارات بالعملاء</h3>
+      <p>اربط كل عقار بالعملاء المهتمين، وتتبع كل معاينة وعرض سعر بكل سهولة.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">👥</div>
+      <h3>إدارة فريق الوكالة</h3>
+      <p>وزع العملاء على الوسطاء، وشوف أداء كل موظف، ومن يحتاج دعم إضافي.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🧾</div>
+      <h3>فواتير متوافقة مع الزكاة</h3>
+      <p>أنشئ فواتير العمولة بضغطة، متوافقة مع متطلبات هيئة الزكاة والضريبة والجمارك.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" class="how">
+  <div class="text-center">
+    <div class="section-label">كيف يعمل</div>
+    <h2 class="section-title">ابدأ في 3 خطوات بسيطة</h2>
+    <p class="section-sub">ما تحتاج خبرة تقنية. إذا تقدر تستخدم واتساب، تقدر تستخدم وسيط.</p>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">١</div>
+      <h3>سجّل حسابك مجاناً</h3>
+      <p>أنشئ حسابك في أقل من دقيقتين. لا بطاقة ائتمانية مطلوبة.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">٢</div>
+      <h3>أضف عملاءك وعقاراتك</h3>
+      <p>أدخل بياناتك يدوياً أو استورد من إكسيل. أسهل من ما تتخيل.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">٣</div>
+      <h3>تابع وأغلق صفقاتك</h3>
+      <p>شوف كل صفقاتك على شاشة واحدة، وتابع بثقة حتى الإغلاق.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="text-center">
+    <div class="section-label">الأسعار</div>
+    <h2 class="section-title">أسعار واضحة، بالريال السعودي</h2>
+    <p class="section-sub">لا رسوم خفية. لا التزام سنوي. ابدأ وانهِ متى تريد.</p>
+  </div>
+  <div class="pricing-grid">
+
+    <div class="price-card">
+      <div class="price-name">وسيط فردي</div>
+      <div class="price-amount">٢٩٩</div>
+      <div class="price-currency">ريال / شهر</div>
+      <div class="price-period">لوسيط عقاري واحد</div>
+      <ul class="price-features">
+        <li>وسيط واحد</li>
+        <li>حتى 200 عميل</li>
+        <li>خط سير الصفقات</li>
+        <li>تذكيرات المتابعة</li>
+        <li>دعم عبر واتساب</li>
+      </ul>
+      <a href="#cta" class="btn-plan btn-plan-outline">ابدأ التجربة المجانية</a>
+    </div>
+
+    <div class="price-card featured">
+      <div class="featured-badge">⭐ الأكثر طلباً</div>
+      <div class="price-name">وكالة صغيرة</div>
+      <div class="price-amount">٩٩٩</div>
+      <div class="price-currency">ريال / شهر</div>
+      <div class="price-period">حتى 10 وسطاء</div>
+      <ul class="price-features">
+        <li>حتى 10 وسطاء</li>
+        <li>عملاء غير محدودين</li>
+        <li>إدارة الفريق</li>
+        <li>تقارير الأداء</li>
+        <li>ربط واتساب</li>
+        <li>فواتير ZATCA</li>
+        <li>دعم أولوية 24/7</li>
+      </ul>
+      <a href="#cta" class="btn-plan btn-plan-filled">ابدأ التجربة المجانية</a>
+    </div>
+
+    <div class="price-card">
+      <div class="price-name">وكالة متوسطة</div>
+      <div class="price-amount">١٩٩٩</div>
+      <div class="price-currency">ريال / شهر</div>
+      <div class="price-period">حتى 25 وسيطاً</div>
+      <ul class="price-features">
+        <li>حتى 25 وسيطاً</li>
+        <li>كل مميزات الوكالة الصغيرة</li>
+        <li>تقارير متقدمة</li>
+        <li>ربط بوابات العقار</li>
+        <li>مدير حساب مخصص</li>
+      </ul>
+      <a href="#cta" class="btn-plan btn-plan-outline">ابدأ التجربة المجانية</a>
+    </div>
+
+    <div class="price-card">
+      <div class="price-name">مؤسسة</div>
+      <div class="price-amount">٣٤٩٩</div>
+      <div class="price-currency">ريال / شهر</div>
+      <div class="price-period">وسطاء غير محدودين</div>
+      <ul class="price-features">
+        <li>وسطاء غير محدودين</li>
+        <li>صلاحيات مخصصة</li>
+        <li>API للتكامل</li>
+        <li>تدريب ميداني للفريق</li>
+        <li>SLA مضمون 99.9%</li>
+      </ul>
+      <a href="#cta" class="btn-plan btn-plan-outline">تواصل معنا</a>
+    </div>
+
+  </div>
+  <p style="text-align:center;margin-top:32px;color:var(--gray);font-size:15px;">
+    ✅ كل الخطط تبدأ بتجربة مجانية 30 يوماً — لا بطاقة ائتمانية مطلوبة
+  </p>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="text-center">
+    <div class="section-label">آراء العملاء</div>
+    <h2 class="section-title">وسطاء يثقون في وسيط</h2>
+    <p class="section-sub">اسمع من وسطاء استخدموا النظام وشافوا الفرق.</p>
+  </div>
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"قبل وسيط، كنت أضيع صفقات لأني أنسى المتابعة. الحين النظام يذكرني بكل عميل في الوقت الصح. ارتفع دخلي 40% في أول 3 أشهر."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">م</div>
+        <div>
+          <div class="author-name">محمد العتيبي</div>
+          <div class="author-title">وسيط عقاري — الرياض</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"أنا أدير وكالة فيها 8 وسطاء. قبل ما أعرف وين وصلت كل صفقة. الحين كل شيء واضح على شاشة واحدة وأقدر أساعد فريقي بشكل أفضل."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">س</div>
+        <div>
+          <div class="author-name">سارة الزهراني</div>
+          <div class="author-title">مديرة وكالة — جدة</div>
+        </div>
+      </div>
+    </div>
+    <div class="testimonial-card">
+      <div class="stars">★★★★★</div>
+      <p class="testimonial-text">"النظام عربي 100% وسهل الاستخدام. ما احتجت أي تدريب. في نفس اليوم اللي سجلت فيه، بدأت أضيف عملائي وأتابع صفقاتي."</p>
+      <div class="testimonial-author">
+        <div class="author-avatar">ع</div>
+        <div>
+          <div class="author-name">عبدالله الدوسري</div>
+          <div class="author-title">وسيط عقاري — الدمام</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="cta-section">
+  <h2>جاهز تغلق صفقاتك بشكل أسرع؟</h2>
+  <p>ابدأ تجربتك المجانية الآن. 30 يوماً كاملة بدون أي التزام.</p>
+  <div class="cta-actions">
+    <a href="https://wa.me/966541482208?text=أريد%20تجربة%20وسيط%20CRM%20مجاناً" class="btn-wa">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      تواصل عبر واتساب
+    </a>
+    <a href="mailto:info@waseetcrm.com" class="btn-white">
+      ✉️ راسلنا بالإيميل
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#1B4F8C,#1D7A4E);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;font-weight:900;">و</div>
+        <span style="font-size:20px;font-weight:700;color:white;">وسيط CRM</span>
+      </div>
+      <p>نظام إدارة عملاء عربي مصمم خصيصاً لوسطاء العقار في المملكة العربية السعودية.</p>
+    </div>
+    <div class="footer-col">
+      <h4>المنتج</h4>
+      <ul>
+        <li><a href="#features">المميزات</a></li>
+        <li><a href="#pricing">الأسعار</a></li>
+        <li><a href="#how">كيف يعمل</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>الشركة</h4>
+      <ul>
+        <li><a href="#">من نحن</a></li>
+        <li><a href="#">تواصل معنا</a></li>
+        <li><a href="#">المدونة</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>الدعم</h4>
+      <ul>
+        <li><a href="#">مركز المساعدة</a></li>
+        <li><a href="https://wa.me/966541482208">واتساب الدعم</a></li>
+        <li><a href="mailto:support@waseetcrm.com">البريد الإلكتروني</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 وسيط CRM. جميع الحقوق محفوظة.</p>
+    <p style="font-family:'Inter',sans-serif;">Made in 🇸🇦 Saudi Arabia</p>
+  </div>
+</footer>
+
+<!-- Floating WhatsApp -->
+<a href="https://wa.me/966541482208?text=أريد%20تجربة%20وسيط%20CRM%20مجاناً" class="wa-float" title="تحدث معنا">
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+</body>
+</html>

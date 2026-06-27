@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
+  <defs>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B4F8C"/>
+      <stop offset="100%" style="stop-color:#1D7A4E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon: chat bubble with key shape -->
+  <rect x="8" y="12" width="48" height="40" rx="10" ry="10" fill="url(#iconGrad)"/>
+  <!-- WhatsApp-style chat tail -->
+  <polygon points="8,46 8,58 20,50" fill="url(#iconGrad)"/>
+  <!-- Key icon inside bubble -->
+  <circle cx="24" cy="30" r="7" fill="none" stroke="white" stroke-width="2.5"/>
+  <line x1="29" y1="35" x2="42" y2="46" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="38" y1="44" x2="38" y2="49" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="42" y1="46" x2="42" y2="51" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Arabic text: وسيط -->
+  <text x="74" y="38" font-family="Cairo, Tajawal, Arial, sans-serif" font-size="28" font-weight="700" fill="#1B4F8C" text-anchor="start" direction="rtl">وسيط</text>
+
+  <!-- Divider -->
+  <line x1="168" y1="18" x2="168" y2="58" stroke="#DDDDDD" stroke-width="1.5"/>
+
+  <!-- English text: CRM -->
+  <text x="182" y="34" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#1B4F8C" letter-spacing="3">CRM</text>
+  <text x="182" y="52" font-family="Arial, sans-serif" font-size="10" fill="#888888" letter-spacing="1">for Real Estate</text>
+</svg>

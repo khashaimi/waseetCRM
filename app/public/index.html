@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<script>
+  // Root redirect: if logged in → app, else → login
+  if (localStorage.getItem('waseet_token')) {
+    window.location.href = '/app.html';
+  } else {
+    window.location.href = '/login.html';
+  }
+</script>
+</head><body></body></html>

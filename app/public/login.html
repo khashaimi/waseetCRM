@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>وسيط CRM — تسجيل الدخول</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#1B4F8C;--green:#1D7A4E;--border:#E5E7EB;--text:#1A1A1A;--gray:#6B7280}
+body{font-family:'Cairo',sans-serif;background:linear-gradient(145deg,#0d2d52,#1B4F8C 50%,#1a5c3a);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:20px;width:100%;max-width:440px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.card-top{background:linear-gradient(135deg,var(--blue),var(--green));padding:32px;text-align:center;color:#fff}
+.logo-icon{width:60px;height:60px;background:rgba(255,255,255,.18);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;margin:0 auto 12px}
+.card-top h1{font-size:26px;font-weight:900}
+.card-top p{font-size:14px;opacity:.8;margin-top:4px}
+.card-body{padding:32px}
+.tabs{display:flex;background:#F3F6FB;border-radius:10px;padding:4px;margin-bottom:24px}
+.tab{flex:1;padding:9px;text-align:center;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;color:var(--gray);transition:.15s}
+.tab.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:700;color:var(--gray);margin-bottom:6px}
+.form-group input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:15px;font-family:'Cairo',sans-serif;transition:.15s;color:var(--text)}
+.form-group input:focus{outline:none;border-color:var(--blue)}
+.btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;margin-top:8px;transition:.15s}
+.btn:hover{background:#133a68}
+.btn-green{background:var(--green)}
+.btn-green:hover{background:#145c39}
+.error{background:#FEE2E2;color:#DC2626;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;margin-bottom:14px;display:none}
+.note{text-align:center;font-size:13px;color:var(--gray);margin-top:16px}
+.spinner{display:none;width:22px;height:22px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card-top">
+    <div class="logo-icon">و</div>
+    <h1>وسيط CRM</h1>
+    <p>نظام إدارة العملاء للوسطاء العقاريين</p>
+  </div>
+  <div class="card-body">
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('login')">تسجيل الدخول</div>
+      <div class="tab" onclick="showTab('register')">إنشاء حساب</div>
+    </div>
+    <div id="error" class="error"></div>
+
+    <!-- LOGIN -->
+    <form id="login-form" onsubmit="doLogin(event)">
+      <div class="form-group"><label>البريد الإلكتروني</label><input name="email" type="email" required placeholder="name@agency.com"></div>
+      <div class="form-group"><label>كلمة المرور</label><input name="password" type="password" required placeholder="••••••••"></div>
+      <button type="submit" class="btn">
+        <span id="login-text">دخول ←</span>
+        <div class="spinner" id="login-spin"></div>
+      </button>
+    </form>
+
+    <!-- REGISTER -->
+    <form id="register-form" style="display:none" onsubmit="doRegister(event)">
+      <div class="form-group"><label>اسم الوكالة *</label><input name="agency_name" required placeholder="مثال: وكالة النجوم العقارية"></div>
+      <div class="form-group"><label>اسمك *</label><input name="name" required placeholder="اسمك الكامل"></div>
+      <div class="form-group"><label>جوالك</label><input name="phone" placeholder="05xxxxxxxx"></div>
+      <div class="form-group"><label>البريد الإلكتروني *</label><input name="email" type="email" required placeholder="name@agency.com"></div>
+      <div class="form-group"><label>كلمة المرور *</label><input name="password" type="password" required minlength="6" placeholder="6 أحرف على الأقل"></div>
+      <button type="submit" class="btn btn-green">
+        <span id="reg-text">إنشاء الحساب مجاناً ←</span>
+        <div class="spinner" id="reg-spin"></div>
+      </button>
+    </form>
+
+    <div class="note">بالتسجيل تحصل على 30 يوماً مجانية بدون بطاقة ائتمانية</div>
+  </div>
+</div>
+
+<script>
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (tab==='login'?i===0:i===1)));
+  document.getElementById('login-form').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('error').style.display = 'none';
+}
+
+function setLoading(prefix, loading) {
+  document.getElementById(prefix+'-text').style.display = loading ? 'none' : '';
+  document.getElementById(prefix+'-spin').style.display = loading ? 'block' : 'none';
+}
+
+function showError(msg) {
+  const el = document.getElementById('error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  setLoading('login', true);
+  document.getElementById('error').style.display = 'none';
+  const fd = new FormData(e.target);
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(Object.fromEntries(fd))
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    localStorage.setItem('waseet_token', data.token);
+    window.location.href = '/app.html';
+  } catch(err) {
+    showError(err.message || 'خطأ في تسجيل الدخول');
+    setLoading('login', false);
+  }
+}
+
+async function doRegister(e) {
+  e.preventDefault();
+  setLoading('reg', true);
+  document.getElementById('error').style.display = 'none';
+  const fd = new FormData(e.target);
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(Object.fromEntries(fd))
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    localStorage.setItem('waseet_token', data.token);
+    window.location.href = '/app.html';
+  } catch(err) {
+    showError(err.message || 'خطأ في إنشاء الحساب');
+    setLoading('reg', false);
+  }
+}
+
+// Redirect if already logged in
+if (localStorage.getItem('waseet_token')) window.location.href = '/app.html';
+</script>
+</body>
+</html>
