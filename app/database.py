@@ -5,7 +5,7 @@ SQLite + all table definitions + helper queries
 import sqlite3, os, hashlib, secrets
 from datetime import datetime, timedelta
 
-DB_PATH = os.environ.get("DB_PATH", os.path.join(os.path.dirname(os.path.abspath(__file__)), "waseet.db"))
+DB_PATH = os.environ.get("DB_PATH", "/tmp/waseet.db")
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
