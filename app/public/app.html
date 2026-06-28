@@ -280,6 +280,25 @@ tr:last-child td{border-bottom:none}
 .toast.toast-error{background:#DC2626}
 .toast.toast-success{background:#1D7A4E}
 
+.item-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.item-row input{border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;background:var(--input-bg);color:var(--text);font-family:inherit}
+.item-row input:focus{outline:none;border-color:var(--blue)}
+.item-row .ir-desc{flex:3;min-width:120px}
+.item-row .ir-qty,.item-row .ir-unit{flex:1;min-width:60px}
+.item-row .ir-price{flex:1.5;min-width:80px}
+.item-row .ir-total{flex:1.5;min-width:80px;font-weight:700;color:var(--green);font-size:13px;text-align:center}
+.item-row .ir-del{width:28px;height:28px;border-radius:6px;background:var(--red-l);color:var(--red);border:none;cursor:pointer;font-size:14px;flex-shrink:0}
+.items-header{display:flex;gap:8px;margin-bottom:6px;font-size:11px;font-weight:700;color:var(--text-2);padding:0 2px}
+.items-header span:nth-child(1){flex:3;min-width:120px}
+.items-header span:nth-child(2),.items-header span:nth-child(3){flex:1;min-width:60px}
+.items-header span:nth-child(4){flex:1.5;min-width:80px}
+.items-header span:nth-child(5){flex:1.5;min-width:80px;text-align:center}
+.totals-box{background:var(--bg);border-radius:10px;padding:14px 18px;margin-top:16px;font-size:14px}
+.totals-row{display:flex;justify-content:space-between;padding:4px 0}
+.totals-row.total{font-weight:900;font-size:16px;color:var(--blue);border-top:2px solid var(--border);margin-top:6px;padding-top:10px}
+.summary-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.acct-income{color:var(--green)}
+.acct-expense{color:var(--red)}
 @media(max-width:768px){
   #sidebar{right:-240px;transition:.3s;box-shadow:none}
   [dir="ltr"] #sidebar{right:auto;left:-240px}
@@ -308,6 +327,11 @@ tr:last-child td{border-bottom:none}
         <span class="nav-badge" id="followup-badge" style="display:none">0</span>
       </div>
       <div class="nav-item" data-page="team" id="nav-team"><span class="ico">👤</span><span data-t="team">الفريق</span></div>
+      <div class="nav-item" data-page="stock"><span class="ico">📦</span><span data-t="stock">المخزون</span></div>
+      <div class="nav-item" data-page="orders"><span class="ico">🛒</span><span data-t="orders">أوامر الشراء</span></div>
+      <div class="nav-item" data-page="quotes"><span class="ico">📝</span><span data-t="quotes">عروض الأسعار</span></div>
+      <div class="nav-item" data-page="sales"><span class="ico">✅</span><span data-t="sales">أوامر البيع</span></div>
+      <div class="nav-item" data-page="accounting"><span class="ico">💰</span><span data-t="accounting">المحاسبة</span></div>
       <div class="nav-item" data-page="profile"><span class="ico">🪪</span><span data-t="profile">ملفي الشخصي</span></div>
       <div class="nav-item" data-page="settings"><span class="ico">⚙️</span><span data-t="settings">الإعدادات</span></div>
     </nav>
@@ -395,6 +419,29 @@ const TR = {
     notSpecified:'غير محدد',
     whatsappSupport:'📱 واتساب الدعم',emailSupport:'✉️ البريد الإلكتروني',
     contactCount:'عميل',openDealsLabel:'صفقة مفتوحة',closedLabel:'مغلقة هذا الشهر',
+    // ERP
+    stock:'المخزون',orders:'أوامر الشراء',quotes:'عروض الأسعار',sales:'أوامر البيع',accounting:'المحاسبة',
+    addItem:'+ صنف جديد',itemName:'اسم الصنف',unit:'الوحدة',unitCost:'تكلفة الوحدة (ريال)',
+    reorderPoint:'حد الطلب',itemCategory:'الفئة',currentQty:'الكمية الحالية',
+    adjustQty:'تعديل الكمية',adjustDelta:'الكمية (+ إضافة / - خصم)',adjustNote:'سبب التعديل',
+    lowStock:'⚠️ تحت حد الطلب',
+    addOrder:'+ أمر شراء',supplier:'المورد',expectedDate:'تاريخ التوصيل المتوقع',
+    receive:'استلام وإضافة للمخزون',received:'تم الاستلام',
+    orderStatus:{'draft':'مسودة','sent':'مرسل','confirmed':'مؤكد','delivered':'مستلم','cancelled':'ملغي'},
+    addQuote:'+ عرض سعر جديد',clientName:'اسم العميل',clientPhone:'جوال العميل',
+    projectName:'اسم المشروع',validUntil:'صالح حتى',terms:'الشروط والأحكام',
+    discount:'خصم %',taxPct:'ضريبة %',subtotal:'المجموع قبل الضريبة',
+    lineItems:'بنود العرض',itemDesc:'الوصف',qty:'الكمية',unitPrice:'سعر الوحدة',
+    addLine:'+ إضافة بند',approve:'اعتماد',convert:'تحويل لأمر بيع',viewPdf:'📄 PDF',
+    quoteStatus:{'draft':'مسودة','sent':'مرسلة','approved':'معتمدة','rejected':'مرفوضة','converted':'محولة'},
+    sendQuote:'إرسال',approved:'✅ معتمدة',
+    soNumber:'رقم الأمر',soStatus:{'active':'نشط','completed':'مكتمل','cancelled':'ملغي'},
+    markComplete:'إتمام',
+    income:'إيراد',expense:'مصروف',addTx:'+ قيد جديد',txType:'النوع',
+    txCategory:'الفئة',txDesc:'الوصف',txAmount:'المبلغ (ريال)',txRef:'المرجع',txDate:'التاريخ',
+    archiveTx:'أرشفة',totalIncome:'إجمالي الإيرادات',totalExpense:'إجمالي المصروفات',
+    netBalance:'صافي الرصيد',monthIncome:'إيرادات الشهر',monthExpense:'مصروفات الشهر',
+    archived:'📁 مؤرشف',showArchived:'عرض المؤرشف',
   },
   en:{
     dashboard:'Dashboard',contacts:'Clients',deals:'Deals',
@@ -439,6 +486,29 @@ const TR = {
     notSpecified:'Not specified',
     whatsappSupport:'📱 WhatsApp Support',emailSupport:'✉️ Email Support',
     contactCount:'clients',openDealsLabel:'open deals',closedLabel:'closed this month',
+    // ERP
+    stock:'Inventory',orders:'Purchase Orders',quotes:'Quotations',sales:'Sales Orders',accounting:'Accounting',
+    addItem:'+ New Item',itemName:'Item Name',unit:'Unit',unitCost:'Unit Cost (SAR)',
+    reorderPoint:'Reorder Point',itemCategory:'Category',currentQty:'Current Qty',
+    adjustQty:'Adjust Quantity',adjustDelta:'Quantity (+ add / - deduct)',adjustNote:'Reason',
+    lowStock:'⚠️ Below Reorder Point',
+    addOrder:'+ Purchase Order',supplier:'Supplier',expectedDate:'Expected Delivery',
+    receive:'Receive & Add to Stock',received:'Received',
+    orderStatus:{'draft':'Draft','sent':'Sent','confirmed':'Confirmed','delivered':'Delivered','cancelled':'Cancelled'},
+    addQuote:'+ New Quotation',clientName:'Client Name',clientPhone:'Client Phone',
+    projectName:'Project Name',validUntil:'Valid Until',terms:'Terms & Conditions',
+    discount:'Discount %',taxPct:'Tax %',subtotal:'Subtotal (before tax)',
+    lineItems:'Line Items',itemDesc:'Description',qty:'Qty',unitPrice:'Unit Price',
+    addLine:'+ Add Line',approve:'Approve',convert:'Convert to Sales Order',viewPdf:'📄 PDF',
+    quoteStatus:{'draft':'Draft','sent':'Sent','approved':'Approved','rejected':'Rejected','converted':'Converted'},
+    sendQuote:'Send',approved:'✅ Approved',
+    soNumber:'Order No.',soStatus:{'active':'Active','completed':'Completed','cancelled':'Cancelled'},
+    markComplete:'Complete',
+    income:'Income',expense:'Expense',addTx:'+ New Entry',txType:'Type',
+    txCategory:'Category',txDesc:'Description',txAmount:'Amount (SAR)',txRef:'Reference',txDate:'Date',
+    archiveTx:'Archive',totalIncome:'Total Income',totalExpense:'Total Expenses',
+    netBalance:'Net Balance',monthIncome:'Month Income',monthExpense:'Month Expenses',
+    archived:'📁 Archived',showArchived:'Show Archived',
   }
 };
 
@@ -530,7 +600,8 @@ async function loadFollowupBadge(){
 function logout(){ clearToken(); window.location.href='/login.html'; }
 
 // ── NAVIGATION ──────────────────────────────────────────────────────────────
-const ADD_KEYS = {contacts:'newContact',deals:'newDeal',properties:'newProperty',followups:'newFollowup',team:'newAgent'};
+const ADD_KEYS = {contacts:'newContact',deals:'newDeal',properties:'newProperty',followups:'newFollowup',team:'newAgent',
+  stock:'addItem',orders:'addOrder',quotes:'addQuote',accounting:'addTx'};
 
 function navigate(page){
   currentPage = page;
@@ -555,6 +626,11 @@ async function renderPage(page){
       case 'properties': await renderProperties(); break;
       case 'followups':  await renderFollowups(); break;
       case 'team':       await renderTeam(); break;
+      case 'stock':      await renderStock(); break;
+      case 'orders':     await renderOrders(); break;
+      case 'quotes':     await renderQuotes(); break;
+      case 'sales':      await renderSales(); break;
+      case 'accounting': await renderAccounting(); break;
       case 'profile':    renderProfile(); break;
       case 'settings':   renderSettings(); break;
     }
@@ -1031,6 +1107,436 @@ async function saveAgent(e){
 }
 async function toggleAgent(id,isActive){ await api('PUT','/team/'+id+'/toggle',{is_active:isActive}); renderTeam(); }
 
+// ── STOCK ───────────────────────────────────────────────────────────────────
+async function renderStock(){
+  const {items}=await api('GET','/stock');
+  const C=document.getElementById('content');
+  C.innerHTML=`<div class="page-enter">
+    <div class="search-bar">
+      <div class="search-input-wrap"><span class="search-icon">🔍</span>
+        <input placeholder="${t('search')}" oninput="stockSearch(this.value)"></div>
+    </div>
+    <div class="card"><div class="table-wrap"><table>
+      <thead><tr><th>${t('itemName')}</th><th>${t('itemCategory')}</th><th>${t('unit')}</th>
+        <th>${t('currentQty')}</th><th>${t('unitCost')}</th><th></th></tr></thead>
+      <tbody id="stock-tbody">
+        ${items.length ? items.map(i=>stockRow(i)).join('') :
+          `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-2)">${t('noContacts').replace('عملاء','مواد')}</td></tr>`}
+      </tbody>
+    </table></div></div>
+  </div>`;
+}
+function stockRow(i){
+  const low = i.reorder_point>0 && i.quantity<=i.reorder_point;
+  return `<tr>
+    <td><strong>${i.name}</strong>${low?` <span class="badge badge-red">${t('lowStock')}</span>`:''}</td>
+    <td>${i.category||'—'}</td><td>${i.unit||'—'}</td>
+    <td><strong style="color:${low?'var(--red)':'var(--text)'}">${i.quantity}</strong></td>
+    <td>${formatSAR(i.unit_cost)}</td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-outline btn-sm" onclick="openAdjust(${i.id},'${i.name.replace(/'/g,'')}',${i.quantity})">±</button>
+      <button class="btn btn-outline btn-sm btn-icon" onclick="editStockItem(${i.id})">✏️</button>
+    </td>
+  </tr>`;
+}
+async function stockSearch(q){
+  const {items}=await api('GET','/stock?search='+encodeURIComponent(q));
+  document.getElementById('stock-tbody').innerHTML=items.length?items.map(i=>stockRow(i)).join(''):
+    `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-2)">لا نتائج</td></tr>`;
+}
+function stockItemForm(s={}){
+  return `<form onsubmit="saveStockItem(event)">
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1"><label>${t('itemName')} *</label><input name="name" value="${s.name||''}" required></div>
+      <div class="form-group"><label>${t('itemCategory')}</label><input name="category" value="${s.category||''}"></div>
+      <div class="form-group"><label>${t('unit')}</label><input name="unit" value="${s.unit||'وحدة'}"></div>
+      <div class="form-group"><label>${t('currentQty')}</label><input name="quantity" type="number" value="${s.quantity||0}"></div>
+      <div class="form-group"><label>${t('unitCost')}</label><input name="unit_cost" type="number" step="0.01" value="${s.unit_cost||0}"></div>
+      <div class="form-group"><label>${t('reorderPoint')}</label><input name="reorder_point" type="number" value="${s.reorder_point||0}"></div>
+    </div>
+    <div class="form-group" style="margin-top:12px"><label>${t('notes')}</label><textarea name="description">${s.description||''}</textarea></div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+      <button type="submit" class="btn btn-primary">${t('save')}</button>
+    </div>
+  </form>`;
+}
+async function saveStockItem(e){
+  e.preventDefault();
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  ['quantity','unit_cost','reorder_point'].forEach(k=>{if(data[k])data[k]=parseFloat(data[k])});
+  try{
+    if(editingId) await api('PUT','/stock/'+editingId,data);
+    else await api('POST','/stock',data);
+    closeModal(); renderStock();
+  }catch(err){showToast(err.message,'error');}
+}
+async function editStockItem(id){
+  const {items}=await api('GET','/stock');
+  const s=items.find(x=>x.id===id); if(!s)return;
+  editingId=id; openModal(t('itemName'),stockItemForm(s));
+}
+function openAdjust(id,name,current){
+  editingId=id;
+  openModal(t('adjustQty')+' — '+name,`
+    <div style="margin-bottom:14px;color:var(--text-2);font-size:14px">${t('currentQty')}: <strong style="color:var(--blue)">${current}</strong></div>
+    <form onsubmit="saveAdjust(event)">
+      <div class="form-group"><label>${t('adjustDelta')}</label><input name="delta" type="number" step="0.01" required placeholder="10 أو -5"></div>
+      <div class="form-group"><label>${t('adjustNote')}</label><input name="note" placeholder="${t('adjustNote')}"></div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+        <button type="submit" class="btn btn-primary">${t('save')}</button>
+      </div>
+    </form>`);
+}
+async function saveAdjust(e){
+  e.preventDefault();
+  const fd=new FormData(e.target);
+  try{
+    await api('POST','/stock/'+editingId+'/adjust',{delta:parseFloat(fd.get('delta')),note:fd.get('note')});
+    closeModal(); renderStock(); showToast(t('profileSaved').replace('الملف الشخصي','المخزون'));
+  }catch(err){showToast(err.message,'error');}
+}
+
+// ── PURCHASE ORDERS ──────────────────────────────────────────────────────────
+const ORDER_STATUS_COLOR={'draft':'badge-gray','sent':'badge-blue','confirmed':'badge-orange','delivered':'badge-green','cancelled':'badge-red'};
+async function renderOrders(){
+  const {orders}=await api('GET','/orders');
+  const C=document.getElementById('content');
+  C.innerHTML=`<div class="page-enter">
+    <div class="card"><div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>${t('supplier')}</th><th>${t('status')}</th>
+        <th>${t('expectedDate')}</th><th>${LANG==='ar'?'الإجمالي':'Total'}</th><th></th></tr></thead>
+      <tbody>${orders.length ? orders.map(o=>`<tr>
+        <td><strong>${o.order_number||o.id}</strong></td>
+        <td>${o.supplier||'—'}</td>
+        <td><span class="badge ${ORDER_STATUS_COLOR[o.status]||'badge-gray'}">${TR[LANG].orderStatus?.[o.status]||o.status}</span></td>
+        <td>${formatDate(o.expected_date)}</td>
+        <td>${formatSAR(o.total||0)}</td>
+        <td style="white-space:nowrap">
+          ${o.status!=='delivered'&&o.status!=='cancelled'?`
+            <button class="btn btn-green btn-sm" onclick="receiveOrder(${o.id})">${t('receive')}</button>`:
+            `<span class="badge badge-green">${t('received')}</span>`}
+          <button class="btn btn-outline btn-sm btn-icon" onclick="viewOrderItems(${o.id})">👁</button>
+        </td>
+      </tr>`).join('') :
+      `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-2)">لا يوجد أوامر شراء</td></tr>`}
+      </tbody>
+    </table></div></div>
+  </div>`;
+}
+async function orderForm(){
+  const {items}=await api('GET','/stock');
+  return `<form onsubmit="saveOrder(event)">
+    <div class="form-grid">
+      <div class="form-group"><label>${t('supplier')}</label><input name="supplier"></div>
+      <div class="form-group"><label>${t('expectedDate')}</label><input name="expected_date" type="date"></div>
+      <div class="form-group"><label>${t('status')}</label>
+        <select name="status">${['draft','sent','confirmed'].map(s=>`<option value="${s}">${TR[LANG].orderStatus?.[s]||s}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:12px"><label>${t('notes')}</label><textarea name="notes"></textarea></div>
+    <div style="margin:16px 0 8px;font-weight:700;font-size:14px;color:var(--blue)">${t('lineItems')}</div>
+    <div class="items-header"><span>${t('itemName')}</span><span>${t('qty')}</span><span>${t('unit')}</span><span>${t('unitCost')}</span><span>${LANG==='ar'?'الإجمالي':'Total'}</span></div>
+    <div id="order-items"></div>
+    <button type="button" class="btn btn-outline btn-sm" onclick="addOrderLine()" style="margin-bottom:12px">${t('addLine')}</button>
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+      <button type="submit" class="btn btn-primary">${t('save')}</button>
+    </div>
+  </form>`;
+}
+function addOrderLine(){
+  const div=document.createElement('div'); div.className='item-row';
+  div.innerHTML=`
+    <input class="ir-desc" placeholder="${t('itemDesc')}">
+    <input class="ir-qty" type="number" placeholder="${t('qty')}" value="1" oninput="calcOrderTotal(this)">
+    <input class="ir-unit" placeholder="${t('unit')}" value="وحدة">
+    <input class="ir-price" type="number" placeholder="${t('unitCost')}" step="0.01" oninput="calcOrderTotal(this)">
+    <span class="ir-total">0</span>
+    <button type="button" class="ir-del" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('order-items').appendChild(div);
+}
+function calcOrderTotal(el){
+  const row=el.closest('.item-row');
+  const qty=parseFloat(row.querySelector('.ir-qty').value)||0;
+  const price=parseFloat(row.querySelector('.ir-price').value)||0;
+  row.querySelector('.ir-total').textContent=formatSAR(qty*price);
+}
+async function saveOrder(e){
+  e.preventDefault();
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  const rows=document.querySelectorAll('#order-items .item-row');
+  const items=[...rows].map(r=>({
+    description:r.querySelector('.ir-desc').value,
+    quantity:parseFloat(r.querySelector('.ir-qty').value)||0,
+    unit_cost:parseFloat(r.querySelector('.ir-price').value)||0,
+  })).filter(i=>i.description||i.quantity);
+  try{
+    await api('POST','/orders',{...data,items});
+    closeModal(); renderOrders(); showToast(LANG==='ar'?'تم إنشاء أمر الشراء':'Order created');
+  }catch(err){showToast(err.message,'error');}
+}
+async function receiveOrder(id){
+  if(!confirm(LANG==='ar'?'تأكيد استلام الطلب وإضافة الكميات للمخزون؟':'Confirm receiving this order and adding to stock?')) return;
+  try{
+    const {message}=await api('POST','/orders/'+id+'/receive',{});
+    showToast(message); renderOrders();
+  }catch(err){showToast(err.message,'error');}
+}
+async function viewOrderItems(id){
+  const {order}=await api('GET','/orders/'+id);
+  const rows=(order.items||[]).map(i=>`<tr>
+    <td>${i.item_name||i.description||'—'}</td>
+    <td>${i.quantity}</td><td>${formatSAR(i.unit_cost)}</td><td>${formatSAR(i.quantity*i.unit_cost)}</td>
+  </tr>`).join('');
+  openModal(order.order_number,`<table style="width:100%;border-collapse:collapse">
+    <thead><tr><th style="padding:8px;text-align:right;border-bottom:2px solid var(--border)">${t('itemName')}</th>
+    <th style="padding:8px;border-bottom:2px solid var(--border)">${t('qty')}</th>
+    <th style="padding:8px;border-bottom:2px solid var(--border)">${t('unitCost')}</th>
+    <th style="padding:8px;border-bottom:2px solid var(--border)">${LANG==='ar'?'الإجمالي':'Total'}</th></tr></thead>
+    <tbody>${rows||'<tr><td colspan=4 style="padding:20px;text-align:center;color:var(--text-2)">لا بنود</td></tr>'}</tbody>
+  </table>`);
+}
+
+// ── QUOTATIONS ───────────────────────────────────────────────────────────────
+const QUOTE_COLOR={'draft':'badge-gray','sent':'badge-blue','approved':'badge-green','rejected':'badge-red','converted':'badge-orange'};
+async function renderQuotes(){
+  const {quotations}=await api('GET','/quotations');
+  const C=document.getElementById('content');
+  C.innerHTML=`<div class="page-enter">
+    <div class="card"><div class="table-wrap"><table>
+      <thead><tr><th>${t('quotes')}</th><th>${t('clientName')}</th><th>${t('projectName')}</th>
+        <th>${t('status')}</th><th>${LANG==='ar'?'الإجمالي':'Total'}</th><th>${t('validUntil')}</th><th></th></tr></thead>
+      <tbody>${quotations.length ? quotations.map(q=>`<tr>
+        <td><strong>${q.quote_number}</strong></td>
+        <td>${q.client_name||'—'}</td><td>${q.project_name||'—'}</td>
+        <td><span class="badge ${QUOTE_COLOR[q.status]||'badge-gray'}">${TR[LANG].quoteStatus?.[q.status]||q.status}</span></td>
+        <td><strong style="color:var(--blue)">${formatSAR(q.total)}</strong></td>
+        <td>${formatDate(q.valid_until)}</td>
+        <td style="white-space:nowrap;display:flex;gap:4px;flex-wrap:wrap">
+          ${q.status==='draft'||q.status==='sent'?`<button class="btn btn-green btn-sm" onclick="approveQuote(${q.id})" title="${t('approve')}">${t('approve')}</button>`:''}
+          ${q.status==='approved'?`<button class="btn btn-primary btn-sm" onclick="convertQuote(${q.id})">${t('convert')}</button>`:''}
+          <button class="btn btn-outline btn-sm" onclick="openQuotePdf(${q.id})">${t('viewPdf')}</button>
+          ${q.status==='draft'?`<button class="btn btn-outline btn-sm btn-icon" onclick="editQuote(${q.id})">✏️</button>`:''}
+        </td>
+      </tr>`).join('') :
+      `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-2)">لا يوجد عروض أسعار</td></tr>`}
+      </tbody>
+    </table></div></div>
+  </div>`;
+}
+function quoteFormHtml(q={}){
+  return `<form onsubmit="saveQuote(event)">
+    <div class="form-grid">
+      <div class="form-group"><label>${t('clientName')} *</label><input name="client_name" value="${q.client_name||''}" required></div>
+      <div class="form-group"><label>${t('clientPhone')}</label><input name="client_phone" value="${q.client_phone||''}"></div>
+      <div class="form-group" style="grid-column:1/-1"><label>${t('projectName')}</label><input name="project_name" value="${q.project_name||''}"></div>
+      <div class="form-group"><label>${t('validUntil')}</label><input name="valid_until" type="date" value="${q.valid_until||''}"></div>
+      <div class="form-group"><label>${t('discount')}</label><input name="discount_pct" type="number" step="0.1" value="${q.discount_pct||0}" oninput="recalcQuote()"></div>
+      <div class="form-group"><label>${t('taxPct')}</label><input name="tax_pct" type="number" step="0.1" value="${q.tax_pct!==undefined?q.tax_pct:15}" oninput="recalcQuote()"></div>
+    </div>
+    <div style="margin:16px 0 6px;font-weight:700;font-size:14px;color:var(--blue)">${t('lineItems')}</div>
+    <div class="items-header"><span>${t('itemDesc')}</span><span>${t('qty')}</span><span>${t('unit')}</span><span>${t('unitPrice')}</span><span>${LANG==='ar'?'الإجمالي':'Total'}</span></div>
+    <div id="quote-items"></div>
+    <button type="button" class="btn btn-outline btn-sm" onclick="addQuoteLine()" style="margin:4px 0 12px">${t('addLine')}</button>
+    <div class="totals-box">
+      <div class="totals-row"><span>${t('subtotal')}</span><span id="qt-sub">0</span></div>
+      <div class="totals-row"><span>${t('discount')}</span><span id="qt-disc">0</span></div>
+      <div class="totals-row"><span>${t('taxPct')}</span><span id="qt-tax">0</span></div>
+      <div class="totals-row total"><span>${LANG==='ar'?'الإجمالي النهائي':'Grand Total'}</span><span id="qt-total">0</span></div>
+    </div>
+    <div class="form-group" style="margin-top:14px"><label>${t('notes')}</label><textarea name="notes">${q.notes||''}</textarea></div>
+    <div class="form-group"><label>${t('terms')}</label><textarea name="terms">${q.terms||''}</textarea></div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+      <button type="submit" class="btn btn-primary">${t('save')}</button>
+    </div>
+  </form>`;
+}
+function addQuoteLine(item={}){
+  const div=document.createElement('div'); div.className='item-row';
+  div.innerHTML=`
+    <input class="ir-desc" placeholder="${t('itemDesc')}" value="${item.description||''}">
+    <input class="ir-qty" type="number" placeholder="1" value="${item.quantity||1}" oninput="recalcQuote()">
+    <input class="ir-unit" placeholder="${t('unit')}" value="${item.unit||'وحدة'}">
+    <input class="ir-price" type="number" placeholder="0" step="0.01" value="${item.unit_price||''}" oninput="recalcQuote()">
+    <span class="ir-total">0</span>
+    <button type="button" class="ir-del" onclick="this.parentElement.remove();recalcQuote()">✕</button>`;
+  document.getElementById('quote-items').appendChild(div);
+  recalcQuote();
+}
+function recalcQuote(){
+  let sub=0;
+  document.querySelectorAll('#quote-items .item-row').forEach(row=>{
+    const qty=parseFloat(row.querySelector('.ir-qty')?.value)||0;
+    const price=parseFloat(row.querySelector('.ir-price')?.value)||0;
+    const tot=qty*price; sub+=tot;
+    row.querySelector('.ir-total').textContent=formatSAR(tot);
+  });
+  const dp=parseFloat(document.querySelector('[name="discount_pct"]')?.value)||0;
+  const tp=parseFloat(document.querySelector('[name="tax_pct"]')?.value)||15;
+  const disc=sub*dp/100; const after=sub-disc; const tax=after*tp/100; const total=after+tax;
+  const s=id=>document.getElementById(id);
+  if(s('qt-sub')) s('qt-sub').textContent=formatSAR(sub);
+  if(s('qt-disc')) s('qt-disc').textContent=formatSAR(disc);
+  if(s('qt-tax')) s('qt-tax').textContent=formatSAR(tax);
+  if(s('qt-total')) s('qt-total').textContent=formatSAR(total);
+}
+function collectQuoteItems(){
+  return [...document.querySelectorAll('#quote-items .item-row')].map(row=>({
+    description:row.querySelector('.ir-desc').value,
+    quantity:parseFloat(row.querySelector('.ir-qty').value)||0,
+    unit:row.querySelector('.ir-unit').value||'وحدة',
+    unit_price:parseFloat(row.querySelector('.ir-price').value)||0,
+  })).filter(i=>i.description||i.quantity);
+}
+async function saveQuote(e){
+  e.preventDefault();
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  const items=collectQuoteItems();
+  if(!items.length){showToast(LANG==='ar'?'أضف بنداً واحداً على الأقل':'Add at least one line item','error');return;}
+  try{
+    if(editingId) await api('PUT','/quotations/'+editingId,{...data,items});
+    else await api('POST','/quotations',{...data,items});
+    closeModal(); renderQuotes(); showToast(LANG==='ar'?'تم حفظ عرض السعر':'Quotation saved');
+  }catch(err){showToast(err.message,'error');}
+}
+async function editQuote(id){
+  const {quotation}=await api('GET','/quotations/'+id);
+  editingId=id;
+  openModal(t('quotes'),quoteFormHtml(quotation));
+  (quotation.items||[]).forEach(i=>addQuoteLine(i));
+  recalcQuote();
+}
+async function approveQuote(id){
+  if(!confirm(LANG==='ar'?'اعتماد عرض السعر؟':'Approve this quotation?')) return;
+  try{const {message}=await api('POST','/quotations/'+id+'/approve',{});showToast(message);renderQuotes();}
+  catch(err){showToast(err.message,'error');}
+}
+async function convertQuote(id){
+  if(!confirm(LANG==='ar'?'تحويل إلى أمر بيع؟':'Convert to sales order?')) return;
+  try{const {message}=await api('POST','/quotations/'+id+'/convert',{});showToast(message);renderQuotes();}
+  catch(err){showToast(err.message,'error');}
+}
+function openQuotePdf(id){
+  window.open('/quote-print.html?id='+id+'&token='+getToken(),'_blank');
+}
+
+// ── SALES ORDERS ─────────────────────────────────────────────────────────────
+const SO_COLOR={'active':'badge-blue','completed':'badge-green','cancelled':'badge-red'};
+async function renderSales(){
+  const {orders}=await api('GET','/sales-orders');
+  const C=document.getElementById('content');
+  C.innerHTML=`<div class="page-enter">
+    <div class="card"><div class="table-wrap"><table>
+      <thead><tr><th>${t('soNumber')}</th><th>${t('clientName')}</th><th>${t('projectName')}</th>
+        <th>${t('status')}</th><th>${LANG==='ar'?'الإجمالي':'Total'}</th><th>${LANG==='ar'?'تاريخ الإنشاء':'Created'}</th><th></th></tr></thead>
+      <tbody>${orders.length ? orders.map(o=>`<tr>
+        <td><strong>${o.order_number}</strong></td>
+        <td>${o.client_name||'—'}</td><td>${o.project_name||'—'}</td>
+        <td><span class="badge ${SO_COLOR[o.status]||'badge-gray'}">${TR[LANG].soStatus?.[o.status]||o.status}</span></td>
+        <td><strong style="color:var(--blue)">${formatSAR(o.total)}</strong></td>
+        <td>${formatDate(o.created_at)}</td>
+        <td>${o.status==='active'?`<button class="btn btn-green btn-sm" onclick="completeSO(${o.id})">${t('markComplete')}</button>`:'—'}</td>
+      </tr>`).join('') :
+      `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-2)">لا يوجد أوامر بيع</td></tr>`}
+      </tbody>
+    </table></div></div>
+  </div>`;
+}
+async function completeSO(id){
+  if(!confirm(LANG==='ar'?'تأكيد إتمام أمر البيع؟':'Mark sales order as completed?')) return;
+  try{await api('PUT','/sales-orders/'+id,{status:'completed'});renderSales();showToast(LANG==='ar'?'تم الإتمام':'Completed');}
+  catch(err){showToast(err.message,'error');}
+}
+
+// ── ACCOUNTING ───────────────────────────────────────────────────────────────
+let showArchivedTx=false;
+async function renderAccounting(){
+  const qs=showArchivedTx?'?archived=1':'';
+  const {transactions,summary}=await api('GET','/accounting'+qs);
+  const C=document.getElementById('content');
+  C.innerHTML=`<div class="page-enter">
+    <div class="summary-cards">
+      <div class="stat-card green"><div class="icon">💵</div><div class="label">${t('totalIncome')}</div><div class="value" style="font-size:18px">${formatSAR(summary.total_income)}</div></div>
+      <div class="stat-card red"><div class="icon">💸</div><div class="label">${t('totalExpense')}</div><div class="value" style="font-size:18px;color:var(--red)">${formatSAR(summary.total_expense)}</div></div>
+      <div class="stat-card ${summary.net>=0?'green':'red'}"><div class="icon">⚖️</div><div class="label">${t('netBalance')}</div><div class="value" style="font-size:18px;color:${summary.net>=0?'var(--green)':'var(--red)'}">${formatSAR(summary.net)}</div></div>
+      <div class="stat-card"><div class="icon">📅</div><div class="label">${t('monthIncome')}</div><div class="value" style="font-size:16px">${formatSAR(summary.month_income)}</div></div>
+      <div class="stat-card"><div class="icon">📅</div><div class="label">${t('monthExpense')}</div><div class="value" style="font-size:16px;color:var(--red)">${formatSAR(summary.month_expense)}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <h3>${t('accounting')}</h3>
+        <button class="btn btn-outline btn-sm" onclick="showArchivedTx=!showArchivedTx;renderAccounting()">${showArchivedTx?'↩ '+t('contacts').replace('العملاء','النشطة'):t('showArchived')}</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>${t('txDate')}</th><th>${t('txType')}</th><th>${t('txCategory')}</th>
+          <th>${t('txDesc')}</th><th>${t('txAmount')}</th><th>${t('txRef')}</th><th></th></tr></thead>
+        <tbody>${transactions.length ? transactions.map(tx=>`<tr style="${tx.status==='archived'?'opacity:.5':''}">
+          <td>${formatDate(tx.date)}</td>
+          <td><span class="badge ${tx.type==='income'?'badge-green':'badge-red'}">${LANG==='ar'?(tx.type==='income'?'إيراد':'مصروف'):(tx.type==='income'?'Income':'Expense')}</span></td>
+          <td>${tx.category||'—'}</td>
+          <td>${tx.description}</td>
+          <td><strong class="${tx.type==='income'?'acct-income':'acct-expense'}">${formatSAR(tx.amount)}</strong></td>
+          <td>${tx.reference||'—'}</td>
+          <td style="white-space:nowrap">
+            ${tx.status==='active'?`
+              <button class="btn btn-outline btn-sm btn-icon" onclick="editTx(${tx.id})">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="archiveTx(${tx.id})">${t('archiveTx')}</button>
+            `:`<span class="badge badge-gray">${t('archived')}</span>`}
+          </td>
+        </tr>`).join('') :
+        `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-2)">لا يوجد قيود</td></tr>`}
+        </tbody>
+      </table></div>
+    </div>
+  </div>`;
+}
+function txForm(tx={}){
+  const today=new Date().toISOString().split('T')[0];
+  return `<form onsubmit="saveTx(event)">
+    <div class="form-grid">
+      <div class="form-group"><label>${t('txType')} *</label>
+        <select name="type">
+          <option value="income" ${(tx.type||'income')==='income'?'selected':''}>${LANG==='ar'?'إيراد':'Income'}</option>
+          <option value="expense" ${tx.type==='expense'?'selected':''}>${LANG==='ar'?'مصروف':'Expense'}</option>
+        </select>
+      </div>
+      <div class="form-group"><label>${t('txDate')} *</label><input name="date" type="date" value="${tx.date||today}" required></div>
+      <div class="form-group" style="grid-column:1/-1"><label>${t('txDesc')} *</label><input name="description" value="${tx.description||''}" required></div>
+      <div class="form-group"><label>${t('txAmount')} *</label><input name="amount" type="number" step="0.01" value="${tx.amount||''}" required></div>
+      <div class="form-group"><label>${t('txCategory')}</label><input name="category" value="${tx.category||''}"></div>
+      <div class="form-group"><label>${t('txRef')}</label><input name="reference" value="${tx.reference||''}"></div>
+    </div>
+    <div class="form-actions">
+      <button type="button" class="btn btn-outline" onclick="closeModal()">${t('cancel')}</button>
+      <button type="submit" class="btn btn-primary">${t('save')}</button>
+    </div>
+  </form>`;
+}
+async function saveTx(e){
+  e.preventDefault();
+  const fd=new FormData(e.target),data=Object.fromEntries(fd);
+  if(data.amount)data.amount=parseFloat(data.amount);
+  try{
+    if(editingId) await api('PUT','/accounting/'+editingId,data);
+    else await api('POST','/accounting',data);
+    closeModal(); renderAccounting();
+  }catch(err){showToast(err.message,'error');}
+}
+let _txCache={};
+async function editTx(id){
+  const {transactions}=await api('GET','/accounting');
+  const tx=transactions.find(x=>x.id===id); if(!tx)return;
+  editingId=id; openModal(t('addTx'),txForm(tx));
+}
+async function archiveTx(id){
+  if(!confirm(LANG==='ar'?'أرشفة هذا القيد؟ لا يمكن الحذف نهائياً.':'Archive this entry? Deletion is not allowed.')) return;
+  try{await api('POST','/accounting/'+id+'/archive',{});renderAccounting();showToast(t('archived'));}
+  catch(err){showToast(err.message,'error');}
+}
+
 // ── PROFILE ─────────────────────────────────────────────────────────────────
 function renderProfile(){
   const u=currentUser, a=currentAgency;
@@ -1217,6 +1723,10 @@ async function openAddModal(){
     case 'properties': openModal(t('newProperty'),propertyForm()); break;
     case 'followups':  openModal(t('newFollowup'),await followupForm()); break;
     case 'team':       openModal(t('inviteAgent'),agentForm()); break;
+    case 'stock':      openModal(t('addItem'),stockItemForm()); break;
+    case 'orders':     openModal(t('addOrder'),await orderForm()); break;
+    case 'quotes':     openModal(t('addQuote'),quoteFormHtml()); setTimeout(()=>addQuoteLine(),50); break;
+    case 'accounting': openModal(t('addTx'),txForm()); break;
   }
 }
 

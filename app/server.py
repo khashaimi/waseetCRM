@@ -213,6 +213,58 @@ class CRMHandler(BaseHTTPRequestHandler):
             elif method == "DELETE" and re.match(r"^/api/followups/\d+$", path):
                 self.handle_delete_followup(int(path.split("/")[-1]))
 
+            # STOCK
+            elif method == "GET" and path == "/api/stock":
+                self.handle_list_stock(qs)
+            elif method == "POST" and path == "/api/stock":
+                self.handle_create_stock()
+            elif method == "PUT" and re.match(r"^/api/stock/\d+$", path):
+                self.handle_update_stock(int(path.split("/")[-1]))
+            elif method == "POST" and re.match(r"^/api/stock/\d+/adjust$", path):
+                self.handle_adjust_stock(int(path.split("/")[-2]))
+
+            # PURCHASE ORDERS
+            elif method == "GET" and path == "/api/orders":
+                self.handle_list_orders(qs)
+            elif method == "POST" and path == "/api/orders":
+                self.handle_create_order()
+            elif method == "GET" and re.match(r"^/api/orders/\d+$", path):
+                self.handle_get_order(int(path.split("/")[-1]))
+            elif method == "PUT" and re.match(r"^/api/orders/\d+$", path):
+                self.handle_update_order(int(path.split("/")[-1]))
+            elif method == "POST" and re.match(r"^/api/orders/\d+/receive$", path):
+                self.handle_receive_order(int(path.split("/")[-2]))
+
+            # QUOTATIONS
+            elif method == "GET" and path == "/api/quotations":
+                self.handle_list_quotations(qs)
+            elif method == "POST" and path == "/api/quotations":
+                self.handle_create_quotation()
+            elif method == "GET" and re.match(r"^/api/quotations/\d+$", path):
+                self.handle_get_quotation(int(path.split("/")[-1]))
+            elif method == "PUT" and re.match(r"^/api/quotations/\d+$", path):
+                self.handle_update_quotation(int(path.split("/")[-1]))
+            elif method == "POST" and re.match(r"^/api/quotations/\d+/approve$", path):
+                self.handle_approve_quotation(int(path.split("/")[-2]))
+            elif method == "POST" and re.match(r"^/api/quotations/\d+/convert$", path):
+                self.handle_convert_quotation(int(path.split("/")[-2]))
+
+            # SALES ORDERS
+            elif method == "GET" and path == "/api/sales-orders":
+                self.handle_list_sales_orders(qs)
+            elif method == "PUT" and re.match(r"^/api/sales-orders/\d+$", path):
+                self.handle_update_sales_order(int(path.split("/")[-1]))
+
+            # ACCOUNTING
+            elif method == "GET" and path == "/api/accounting":
+                self.handle_list_accounting(qs)
+            elif method == "POST" and path == "/api/accounting":
+                self.handle_create_accounting()
+            elif method == "PUT" and re.match(r"^/api/accounting/\d+$", path):
+                self.handle_update_accounting(int(path.split("/")[-1]))
+            elif method == "POST" and re.match(r"^/api/accounting/\d+/archive$", path):
+                self.handle_archive_accounting(int(path.split("/")[-2]))
+
             # PUBLIC LEAD FORM (no auth required)
             elif method == "POST" and path == "/api/leads":
                 self.handle_public_lead()
@@ -484,6 +536,168 @@ class CRMHandler(BaseHTTPRequestHandler):
             return
         db.delete_followup(followup_id, claims["agency"])
         self.send_json({"message": "تم الحذف"})
+
+    # ── STOCK ────────────────────────────────────────────────────────────────
+
+    def handle_list_stock(self, qs):
+        claims = self.require_auth()
+        if not claims: return
+        rows = db.list_stock(claims["agency"], search=qs.get("search",[""])[0])
+        self.send_json({"items": rows})
+
+    def handle_create_stock(self):
+        claims = self.require_auth()
+        if not claims: return
+        data = self.read_json()
+        if not data.get("name"): return self.send_error_json("الاسم مطلوب")
+        iid = db.create_stock_item(claims["agency"], data)
+        self.send_json({"id": iid, "message": "تم إضافة الصنف"}, 201)
+
+    def handle_update_stock(self, item_id):
+        claims = self.require_auth()
+        if not claims: return
+        db.update_stock_item(item_id, claims["agency"], self.read_json())
+        self.send_json({"message": "تم التحديث"})
+
+    def handle_adjust_stock(self, item_id):
+        claims = self.require_auth()
+        if not claims: return
+        data = self.read_json()
+        delta = float(data.get("delta", 0))
+        db.adjust_stock(item_id, claims["agency"], delta,
+                        data.get("type","manual"), data.get("reference",""),
+                        data.get("note",""), claims["sub"])
+        self.send_json({"message": "تم تعديل المخزون"})
+
+    # ── PURCHASE ORDERS ───────────────────────────────────────────────────────
+
+    def handle_list_orders(self, qs):
+        claims = self.require_auth()
+        if not claims: return
+        rows = db.list_orders(claims["agency"], status=qs.get("status",[""])[0])
+        self.send_json({"orders": rows})
+
+    def handle_create_order(self):
+        claims = self.require_auth()
+        if not claims: return
+        data = self.read_json()
+        items = data.pop("items", [])
+        oid = db.create_order(claims["agency"], data, items, claims["sub"])
+        self.send_json({"id": oid, "message": "تم إنشاء أمر الشراء"}, 201)
+
+    def handle_get_order(self, order_id):
+        claims = self.require_auth()
+        if not claims: return
+        order = db.get_order(order_id, claims["agency"])
+        if not order: return self.send_error_json("غير موجود", 404)
+        self.send_json({"order": order})
+
+    def handle_update_order(self, order_id):
+        claims = self.require_auth()
+        if not claims: return
+        db.update_order(order_id, claims["agency"], self.read_json())
+        self.send_json({"message": "تم التحديث"})
+
+    def handle_receive_order(self, order_id):
+        claims = self.require_auth()
+        if not claims: return
+        ok, msg = db.receive_order(order_id, claims["agency"], claims["sub"])
+        if not ok: return self.send_error_json(msg, 400)
+        self.send_json({"message": msg})
+
+    # ── QUOTATIONS ────────────────────────────────────────────────────────────
+
+    def handle_list_quotations(self, qs):
+        claims = self.require_auth()
+        if not claims: return
+        rows = db.list_quotations(claims["agency"], status=qs.get("status",[""])[0])
+        self.send_json({"quotations": rows})
+
+    def handle_create_quotation(self):
+        claims = self.require_auth()
+        if not claims: return
+        data = self.read_json()
+        items = data.pop("items", [])
+        if not items: return self.send_error_json("يجب إضافة بند واحد على الأقل")
+        qid = db.create_quotation(claims["agency"], data, items, claims["sub"])
+        self.send_json({"id": qid, "message": "تم إنشاء عرض السعر"}, 201)
+
+    def handle_get_quotation(self, quotation_id):
+        claims = self.require_auth()
+        if not claims: return
+        qt = db.get_quotation(quotation_id, claims["agency"])
+        if not qt: return self.send_error_json("غير موجود", 404)
+        self.send_json({"quotation": qt})
+
+    def handle_update_quotation(self, quotation_id):
+        claims = self.require_auth()
+        if not claims: return
+        data = self.read_json()
+        items = data.pop("items", None)
+        db.update_quotation(quotation_id, claims["agency"], data, items)
+        self.send_json({"message": "تم التحديث"})
+
+    def handle_approve_quotation(self, quotation_id):
+        claims = self.require_admin()
+        if not claims: return
+        ok, msg = db.approve_quotation(quotation_id, claims["agency"], claims["sub"])
+        if not ok: return self.send_error_json(msg, 400)
+        self.send_json({"message": msg})
+
+    def handle_convert_quotation(self, quotation_id):
+        claims = self.require_admin()
+        if not claims: return
+        ok, msg = db.convert_quotation(quotation_id, claims["agency"], claims["sub"])
+        if not ok: return self.send_error_json(msg, 400)
+        self.send_json({"message": msg})
+
+    # ── SALES ORDERS ──────────────────────────────────────────────────────────
+
+    def handle_list_sales_orders(self, qs):
+        claims = self.require_auth()
+        if not claims: return
+        rows = db.list_sales_orders(claims["agency"], status=qs.get("status",[""])[0])
+        self.send_json({"orders": rows})
+
+    def handle_update_sales_order(self, so_id):
+        claims = self.require_auth()
+        if not claims: return
+        db.update_sales_order(so_id, claims["agency"], self.read_json())
+        self.send_json({"message": "تم التحديث"})
+
+    # ── ACCOUNTING ────────────────────────────────────────────────────────────
+
+    def handle_list_accounting(self, qs):
+        claims = self.require_auth()
+        if not claims: return
+        rows = db.list_transactions(claims["agency"],
+                                    type_filter=qs.get("type",[""])[0],
+                                    start=qs.get("start",[""])[0],
+                                    end=qs.get("end",[""])[0],
+                                    include_archived=qs.get("archived",["0"])[0]=="1")
+        summary = db.get_accounting_summary(claims["agency"])
+        self.send_json({"transactions": rows, "summary": summary})
+
+    def handle_create_accounting(self):
+        claims = self.require_auth()
+        if not claims: return
+        data = self.read_json()
+        if not data.get("description") or not data.get("amount") or not data.get("type"):
+            return self.send_error_json("النوع والوصف والمبلغ مطلوبة")
+        tid = db.create_transaction(claims["agency"], data, claims["sub"])
+        self.send_json({"id": tid, "message": "تم إضافة القيد"}, 201)
+
+    def handle_update_accounting(self, tx_id):
+        claims = self.require_auth()
+        if not claims: return
+        db.update_transaction(tx_id, claims["agency"], self.read_json())
+        self.send_json({"message": "تم التحديث"})
+
+    def handle_archive_accounting(self, tx_id):
+        claims = self.require_auth()
+        if not claims: return
+        db.archive_transaction(tx_id, claims["agency"])
+        self.send_json({"message": "تم الأرشفة"})
 
     # ── PUBLIC LEAD ──────────────────────────────────────────────────────────
 

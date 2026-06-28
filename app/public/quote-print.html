@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>عرض السعر</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Cairo',sans-serif;background:#fff;color:#1A1A1A;font-size:14px;padding:0}
+.page{max-width:860px;margin:0 auto;padding:40px 48px;min-height:100vh}
+
+/* Header */
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:36px;padding-bottom:24px;border-bottom:3px solid #1B4F8C}
+.logo-block{display:flex;align-items:center;gap:12px}
+.logo-icon{width:52px;height:52px;background:#1B4F8C;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;font-weight:900}
+.company-name{font-size:22px;font-weight:900;color:#1B4F8C}
+.company-sub{font-size:12px;color:#6B7280;margin-top:2px}
+.quote-meta{text-align:left;direction:ltr}
+.quote-title{font-size:28px;font-weight:900;color:#1B4F8C;margin-bottom:6px}
+.quote-number{font-size:14px;color:#6B7280}
+.quote-status{display:inline-block;padding:4px 14px;border-radius:50px;font-size:12px;font-weight:700;margin-top:6px}
+.status-approved{background:#D6EDE0;color:#1D7A4E}
+.status-draft{background:#E5E7EB;color:#6B7280}
+.status-sent{background:#D6E4F5;color:#1B4F8C}
+.status-converted{background:#FEF3C7;color:#D97706}
+
+/* Info grid */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+.info-card{background:#F8FAFF;border-radius:10px;padding:16px;border:1px solid #E5E7EB}
+.info-card h4{font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.info-card p{font-size:14px;color:#1A1A1A;margin-bottom:3px}
+.info-card strong{font-weight:700}
+
+/* Line items table */
+table{width:100%;border-collapse:collapse;margin-bottom:0}
+thead th{background:#1B4F8C;color:#fff;padding:10px 14px;font-size:13px;font-weight:700;text-align:right}
+tbody td{padding:10px 14px;font-size:13px;border-bottom:1px solid #E5E7EB;vertical-align:top;text-align:right}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:nth-child(even){background:#F8FAFF}
+.line-total{font-weight:700;color:#1B4F8C}
+tfoot td{padding:8px 14px;font-size:13px}
+
+/* Totals */
+.totals-section{display:flex;justify-content:flex-end;margin-top:4px;margin-bottom:28px}
+.totals-box{width:280px;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden}
+.totals-row{display:flex;justify-content:space-between;padding:9px 16px;font-size:13px;border-bottom:1px solid #E5E7EB}
+.totals-row:last-child{border-bottom:none}
+.totals-row.grand{background:#1B4F8C;color:#fff;font-size:16px;font-weight:900}
+.totals-row span:last-child{font-weight:700}
+
+/* Notes & terms */
+.notes-section{margin-bottom:24px}
+.notes-section h4{font-size:13px;font-weight:700;color:#1B4F8C;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #E5E7EB}
+.notes-section p{font-size:13px;color:#374151;line-height:1.6;white-space:pre-wrap}
+
+/* Footer */
+.footer{margin-top:40px;padding-top:20px;border-top:2px solid #E5E7EB;display:flex;justify-content:space-between;align-items:flex-end}
+.signature-box{text-align:center}
+.sig-line{width:160px;border-bottom:1.5px solid #1B4F8C;margin-bottom:8px;height:40px}
+.sig-label{font-size:12px;color:#6B7280;font-weight:600}
+.footer-info{font-size:12px;color:#9CA3AF;text-align:left}
+
+/* Print actions (screen only) */
+.print-bar{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:100}
+.print-bar button{padding:10px 22px;border-radius:8px;font-size:14px;font-weight:700;font-family:'Cairo',sans-serif;cursor:pointer;border:none}
+.btn-print{background:#1B4F8C;color:#fff}
+.btn-close{background:#E5E7EB;color:#1A1A1A}
+
+/* Loading / error */
+#loading{text-align:center;padding:80px 20px;color:#6B7280}
+#error-msg{background:#FEE2E2;color:#DC2626;border-radius:8px;padding:16px;text-align:center;margin:20px}
+
+@media print{
+  .print-bar{display:none}
+  body{padding:0}
+  .page{padding:24px 32px;max-width:100%}
+  @page{margin:15mm;size:A4}
+}
+</style>
+</head>
+<body>
+<div id="loading">⏳ جاري تحميل عرض السعر...</div>
+<div id="error-msg" style="display:none"></div>
+
+<div class="page" id="quote-page" style="display:none">
+  <div class="header">
+    <div class="logo-block">
+      <div class="logo-icon">و</div>
+      <div>
+        <div class="company-name" id="company-name">وسيط CRM</div>
+        <div class="company-sub">Waseet CRM</div>
+      </div>
+    </div>
+    <div class="quote-meta">
+      <div class="quote-title">عرض سعر</div>
+      <div class="quote-number" id="q-number">QT-2026-0001</div>
+      <div><span class="quote-status status-draft" id="q-status-badge">مسودة</span></div>
+    </div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card">
+      <h4>بيانات العميل</h4>
+      <p><strong id="q-client">—</strong></p>
+      <p id="q-phone"></p>
+      <p id="q-project" style="color:#1B4F8C;font-weight:600"></p>
+    </div>
+    <div class="info-card">
+      <h4>تفاصيل العرض</h4>
+      <p>تاريخ الإصدار: <strong id="q-created">—</strong></p>
+      <p>صالح حتى: <strong id="q-valid">—</strong></p>
+      <p>المعتمد بواسطة: <strong id="q-approver">—</strong></p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40px">#</th>
+        <th>الوصف</th>
+        <th style="width:70px">الكمية</th>
+        <th style="width:70px">الوحدة</th>
+        <th style="width:110px">سعر الوحدة</th>
+        <th style="width:120px">الإجمالي</th>
+      </tr>
+    </thead>
+    <tbody id="q-items"></tbody>
+  </table>
+
+  <div class="totals-section">
+    <div class="totals-box">
+      <div class="totals-row"><span>المجموع قبل الضريبة</span><span id="q-sub">—</span></div>
+      <div class="totals-row"><span>خصم (<span id="q-disc-pct">0</span>%)</span><span id="q-disc">—</span></div>
+      <div class="totals-row"><span>ضريبة القيمة المضافة (<span id="q-tax-pct">15</span>%)</span><span id="q-tax">—</span></div>
+      <div class="totals-row grand"><span>الإجمالي النهائي</span><span id="q-total">—</span></div>
+    </div>
+  </div>
+
+  <div id="q-notes-wrap" class="notes-section" style="display:none">
+    <h4>ملاحظات</h4>
+    <p id="q-notes"></p>
+  </div>
+  <div id="q-terms-wrap" class="notes-section" style="display:none">
+    <h4>الشروط والأحكام</h4>
+    <p id="q-terms"></p>
+  </div>
+
+  <div class="footer">
+    <div class="signature-box">
+      <div class="sig-line"></div>
+      <div class="sig-label">توقيع العميل</div>
+    </div>
+    <div class="footer-info">
+      <div id="footer-agency"></div>
+      <div style="margin-top:4px;color:#CBD5E1">وسيط CRM — waseetcrm.com</div>
+    </div>
+    <div class="signature-box">
+      <div class="sig-line"></div>
+      <div class="sig-label">توقيع المفوّض</div>
+    </div>
+  </div>
+</div>
+
+<div class="print-bar">
+  <button class="btn-print" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+  <button class="btn-close" onclick="window.close()">✕ إغلاق</button>
+</div>
+
+<script>
+const STATUS_LABELS={'draft':'مسودة','sent':'مرسلة','approved':'✅ معتمدة','rejected':'مرفوضة','converted':'محولة'};
+const STATUS_CLASS={'draft':'status-draft','sent':'status-sent','approved':'status-approved','converted':'status-converted','rejected':'status-draft'};
+
+function fmt(n){if(!n&&n!==0)return'—';return Number(n).toLocaleString('ar-SA')+' ريال';}
+function fmtDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'});}
+
+(async function load(){
+  const params=new URLSearchParams(window.location.search);
+  const id=params.get('id'), token=params.get('token')||localStorage.getItem('waseet_token');
+  if(!id||!token){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('error-msg').textContent='رابط غير صالح';
+    document.getElementById('error-msg').style.display='block';
+    return;
+  }
+  try{
+    const res=await fetch('/api/quotations/'+id,{headers:{'Authorization':'Bearer '+token}});
+    if(!res.ok) throw new Error('غير مصرح أو غير موجود');
+    const {quotation:q}=await res.json();
+
+    document.title='عرض السعر — '+q.quote_number;
+    document.getElementById('company-name').textContent=q.agency_name||'وسيط CRM';
+    document.getElementById('footer-agency').textContent=q.agency_name||'';
+    document.getElementById('q-number').textContent=q.quote_number;
+
+    const badge=document.getElementById('q-status-badge');
+    badge.textContent=STATUS_LABELS[q.status]||q.status;
+    badge.className='quote-status '+(STATUS_CLASS[q.status]||'status-draft');
+
+    document.getElementById('q-client').textContent=q.client_name||'—';
+    if(q.client_phone) document.getElementById('q-phone').textContent='📱 '+q.client_phone;
+    if(q.project_name) document.getElementById('q-project').textContent='📁 '+q.project_name;
+    document.getElementById('q-created').textContent=fmtDate(q.created_at);
+    document.getElementById('q-valid').textContent=fmtDate(q.valid_until);
+    document.getElementById('q-approver').textContent=q.approver_name||'—';
+
+    // Line items
+    const tbody=document.getElementById('q-items');
+    (q.items||[]).forEach((item,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>${i+1}</td><td>${item.description}</td>
+        <td>${item.quantity}</td><td>${item.unit||'وحدة'}</td>
+        <td>${fmt(item.unit_price)}</td>
+        <td class="line-total">${fmt(item.total||item.quantity*item.unit_price)}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    // Totals
+    const sub=q.subtotal||0,dp=q.discount_pct||0,tp=q.tax_pct||15;
+    const disc=sub*dp/100, after=sub-disc, tax=after*tp/100;
+    document.getElementById('q-sub').textContent=fmt(sub);
+    document.getElementById('q-disc-pct').textContent=dp;
+    document.getElementById('q-disc').textContent=fmt(disc);
+    document.getElementById('q-tax-pct').textContent=tp;
+    document.getElementById('q-tax').textContent=fmt(tax);
+    document.getElementById('q-total').textContent=fmt(q.total||after+tax);
+
+    if(q.notes){document.getElementById('q-notes').textContent=q.notes;document.getElementById('q-notes-wrap').style.display='block';}
+    if(q.terms){document.getElementById('q-terms').textContent=q.terms;document.getElementById('q-terms-wrap').style.display='block';}
+
+    document.getElementById('loading').style.display='none';
+    document.getElementById('quote-page').style.display='block';
+
+    // Auto-open print dialog only if status is approved or converted
+    if(params.get('print')==='1') setTimeout(()=>window.print(),400);
+
+  }catch(e){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('error-msg').textContent=e.message||'خطأ في التحميل';
+    document.getElementById('error-msg').style.display='block';
+  }
+})();
+</script>
+</body>
+</html>

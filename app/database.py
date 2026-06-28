@@ -41,6 +41,115 @@ def init_db():
     c = conn.cursor()
 
     c.executescript("""
+    CREATE TABLE IF NOT EXISTS stock_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agency_id INTEGER NOT NULL REFERENCES agencies(id),
+        name TEXT NOT NULL,
+        unit TEXT DEFAULT 'وحدة',
+        quantity REAL DEFAULT 0,
+        unit_cost REAL DEFAULT 0,
+        reorder_point REAL DEFAULT 0,
+        category TEXT,
+        description TEXT,
+        is_active INTEGER DEFAULT 1,
+        created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS stock_movements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agency_id INTEGER NOT NULL,
+        item_id INTEGER REFERENCES stock_items(id),
+        movement_type TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        reference TEXT,
+        note TEXT,
+        created_by INTEGER REFERENCES users(id),
+        created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS purchase_orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agency_id INTEGER NOT NULL REFERENCES agencies(id),
+        order_number TEXT,
+        supplier TEXT,
+        status TEXT DEFAULT 'draft',
+        expected_date TEXT,
+        delivered_date TEXT,
+        notes TEXT,
+        created_by INTEGER REFERENCES users(id),
+        created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS purchase_order_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER REFERENCES purchase_orders(id),
+        item_id INTEGER REFERENCES stock_items(id),
+        description TEXT,
+        quantity REAL NOT NULL,
+        unit_cost REAL NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS quotations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agency_id INTEGER NOT NULL REFERENCES agencies(id),
+        quote_number TEXT,
+        client_name TEXT,
+        client_phone TEXT,
+        project_name TEXT,
+        status TEXT DEFAULT 'draft',
+        valid_until TEXT,
+        notes TEXT,
+        terms TEXT,
+        discount_pct REAL DEFAULT 0,
+        tax_pct REAL DEFAULT 15,
+        subtotal REAL DEFAULT 0,
+        total REAL DEFAULT 0,
+        approved_by INTEGER REFERENCES users(id),
+        approved_at TEXT,
+        converted_at TEXT,
+        created_by INTEGER REFERENCES users(id),
+        created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS quotation_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        quotation_id INTEGER REFERENCES quotations(id),
+        description TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        unit TEXT DEFAULT 'وحدة',
+        unit_price REAL NOT NULL,
+        total REAL DEFAULT 0
+    );
+
+    CREATE TABLE IF NOT EXISTS sales_orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agency_id INTEGER NOT NULL REFERENCES agencies(id),
+        quotation_id INTEGER REFERENCES quotations(id),
+        order_number TEXT,
+        client_name TEXT,
+        client_phone TEXT,
+        project_name TEXT,
+        status TEXT DEFAULT 'active',
+        total REAL DEFAULT 0,
+        notes TEXT,
+        created_by INTEGER REFERENCES users(id),
+        created_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        agency_id INTEGER NOT NULL REFERENCES agencies(id),
+        type TEXT NOT NULL,
+        category TEXT,
+        description TEXT NOT NULL,
+        amount REAL NOT NULL,
+        reference TEXT,
+        date TEXT NOT NULL,
+        status TEXT DEFAULT 'active',
+        created_by INTEGER REFERENCES users(id),
+        created_at TEXT DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS agencies (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
@@ -487,6 +596,19 @@ def toggle_agent(user_id, agency_id, is_active):
     finally:
         conn.close()
 
+def activate_plan(agency_id, plan):
+    """Upgrade (or downgrade) an agency's subscription plan."""
+    conn = get_db()
+    try:
+        conn.execute(
+            "UPDATE agencies SET plan=?, trial_ends=NULL WHERE id=?",
+            (plan, agency_id)
+        )
+        conn.commit()
+        print(f"[DB] Agency {agency_id} plan set to '{plan}'", flush=True)
+    finally:
+        conn.close()
+
 def update_profile(user_id, data):
     """Update user's own name/phone and optionally their password."""
     conn = get_db()
@@ -517,6 +639,356 @@ def get_agency(agency_id):
     try:
         row = conn.execute("SELECT * FROM agencies WHERE id=?", (agency_id,)).fetchone()
         return dict(row) if row else None
+    finally:
+        conn.close()
+
+# ── STOCK ─────────────────────────────────────────────────────────────────────
+
+def list_stock(agency_id, search=""):
+    conn = get_db()
+    try:
+        q = "SELECT * FROM stock_items WHERE agency_id=? AND is_active=1"
+        params = [agency_id]
+        if search:
+            q += " AND name LIKE ?"
+            params.append(f"%{search}%")
+        q += " ORDER BY name ASC"
+        return [dict(r) for r in conn.execute(q, params).fetchall()]
+    finally:
+        conn.close()
+
+def create_stock_item(agency_id, data):
+    conn = get_db()
+    try:
+        c = conn.cursor()
+        c.execute("""INSERT INTO stock_items (agency_id,name,unit,quantity,unit_cost,reorder_point,category,description)
+                     VALUES (?,?,?,?,?,?,?,?)""",
+                  (agency_id, data["name"], data.get("unit","وحدة"),
+                   float(data.get("quantity",0)), float(data.get("unit_cost",0)),
+                   float(data.get("reorder_point",0)), data.get("category"), data.get("description")))
+        conn.commit()
+        return c.lastrowid
+    finally:
+        conn.close()
+
+def update_stock_item(item_id, agency_id, data):
+    conn = get_db()
+    try:
+        fields = ["name","unit","unit_cost","reorder_point","category","description"]
+        sets = ", ".join(f"{f}=?" for f in fields if f in data)
+        vals = [data[f] for f in fields if f in data]
+        if sets:
+            conn.execute(f"UPDATE stock_items SET {sets} WHERE id=? AND agency_id=?", vals+[item_id,agency_id])
+        conn.commit()
+    finally:
+        conn.close()
+
+def adjust_stock(item_id, agency_id, qty_delta, movement_type="manual", ref="", note="", user_id=None):
+    conn = get_db()
+    try:
+        conn.execute("UPDATE stock_items SET quantity=quantity+? WHERE id=? AND agency_id=?",
+                     (qty_delta, item_id, agency_id))
+        conn.execute("""INSERT INTO stock_movements (agency_id,item_id,movement_type,quantity,reference,note,created_by)
+                        VALUES (?,?,?,?,?,?,?)""",
+                     (agency_id, item_id, movement_type, qty_delta, ref, note, user_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+# ── PURCHASE ORDERS ───────────────────────────────────────────────────────────
+
+def _next_seq(conn, table, agency_id, prefix):
+    n = conn.execute(f"SELECT COUNT(*) FROM {table} WHERE agency_id=?", (agency_id,)).fetchone()[0] + 1
+    return f"{prefix}-{datetime.now().year}-{n:04d}"
+
+def list_orders(agency_id, status=""):
+    conn = get_db()
+    try:
+        q = """SELECT po.*, u.name as creator_name,
+               (SELECT COALESCE(SUM(quantity*unit_cost),0) FROM purchase_order_items WHERE order_id=po.id) as total
+               FROM purchase_orders po LEFT JOIN users u ON po.created_by=u.id
+               WHERE po.agency_id=?"""
+        params = [agency_id]
+        if status:
+            q += " AND po.status=?"; params.append(status)
+        return [dict(r) for r in conn.execute(q+(" ORDER BY po.created_at DESC"), params).fetchall()]
+    finally:
+        conn.close()
+
+def get_order(order_id, agency_id):
+    conn = get_db()
+    try:
+        row = conn.execute("SELECT * FROM purchase_orders WHERE id=? AND agency_id=?",(order_id,agency_id)).fetchone()
+        if not row: return None
+        order = dict(row)
+        items = conn.execute("""SELECT poi.*, si.name as item_name FROM purchase_order_items poi
+                               LEFT JOIN stock_items si ON poi.item_id=si.id WHERE poi.order_id=?""",(order_id,)).fetchall()
+        order["items"] = [dict(i) for i in items]
+        return order
+    finally:
+        conn.close()
+
+def create_order(agency_id, data, items, created_by):
+    conn = get_db()
+    try:
+        c = conn.cursor()
+        num = _next_seq(conn, "purchase_orders", agency_id, "PO")
+        c.execute("""INSERT INTO purchase_orders (agency_id,order_number,supplier,status,expected_date,notes,created_by)
+                     VALUES (?,?,?,?,?,?,?)""",
+                  (agency_id, num, data.get("supplier"), data.get("status","draft"),
+                   data.get("expected_date"), data.get("notes"), created_by))
+        oid = c.lastrowid
+        for it in items:
+            c.execute("INSERT INTO purchase_order_items (order_id,item_id,description,quantity,unit_cost) VALUES (?,?,?,?,?)",
+                      (oid, it.get("item_id") or None, it.get("description"),
+                       float(it.get("quantity",0)), float(it.get("unit_cost",0))))
+        conn.commit()
+        return oid
+    finally:
+        conn.close()
+
+def update_order(order_id, agency_id, data):
+    conn = get_db()
+    try:
+        fields = ["supplier","status","expected_date","notes"]
+        sets = ", ".join(f"{f}=?" for f in fields if f in data)
+        vals = [data[f] for f in fields if f in data]
+        if sets:
+            conn.execute(f"UPDATE purchase_orders SET {sets} WHERE id=? AND agency_id=?", vals+[order_id,agency_id])
+        conn.commit()
+    finally:
+        conn.close()
+
+def receive_order(order_id, agency_id, user_id):
+    conn = get_db()
+    try:
+        row = conn.execute("SELECT * FROM purchase_orders WHERE id=? AND agency_id=?",(order_id,agency_id)).fetchone()
+        if not row: return False, "الطلب غير موجود"
+        if dict(row)["status"] == "delivered": return False, "تم استلام هذا الطلب مسبقاً"
+        conn.execute("UPDATE purchase_orders SET status='delivered', delivered_date=date('now') WHERE id=? AND agency_id=?",
+                     (order_id, agency_id))
+        items = conn.execute("SELECT * FROM purchase_order_items WHERE order_id=?",(order_id,)).fetchall()
+        for it in items:
+            it = dict(it)
+            if it.get("item_id"):
+                conn.execute("UPDATE stock_items SET quantity=quantity+? WHERE id=? AND agency_id=?",
+                             (it["quantity"], it["item_id"], agency_id))
+                conn.execute("""INSERT INTO stock_movements (agency_id,item_id,movement_type,quantity,reference,note,created_by)
+                                VALUES (?,?,?,?,?,?,?)""",
+                             (agency_id, it["item_id"], "in", it["quantity"], f"PO-{order_id}", "استلام طلب شراء", user_id))
+        conn.commit()
+        return True, "تم الاستلام وإضافة الكميات للمخزون"
+    finally:
+        conn.close()
+
+# ── QUOTATIONS ────────────────────────────────────────────────────────────────
+
+def _calc_and_save_items(conn, quotation_id, items, discount_pct, tax_pct):
+    conn.execute("DELETE FROM quotation_items WHERE quotation_id=?", (quotation_id,))
+    subtotal = 0
+    for it in items:
+        qty = float(it.get("quantity",0)); price = float(it.get("unit_price",0)); tot = qty*price
+        subtotal += tot
+        conn.execute("INSERT INTO quotation_items (quotation_id,description,quantity,unit,unit_price,total) VALUES (?,?,?,?,?,?)",
+                     (quotation_id, it.get("description",""), qty, it.get("unit","وحدة"), price, tot))
+    discount = subtotal * discount_pct / 100
+    after = subtotal - discount
+    tax = after * tax_pct / 100
+    total = after + tax
+    conn.execute("UPDATE quotations SET subtotal=?,total=? WHERE id=?", (subtotal, total, quotation_id))
+    return subtotal, total
+
+def list_quotations(agency_id, status=""):
+    conn = get_db()
+    try:
+        q = """SELECT qt.*, u.name as creator_name, a.name as approver_name
+               FROM quotations qt LEFT JOIN users u ON qt.created_by=u.id LEFT JOIN users a ON qt.approved_by=a.id
+               WHERE qt.agency_id=?"""
+        params = [agency_id]
+        if status:
+            q += " AND qt.status=?"; params.append(status)
+        return [dict(r) for r in conn.execute(q+" ORDER BY qt.created_at DESC", params).fetchall()]
+    finally:
+        conn.close()
+
+def get_quotation(quotation_id, agency_id):
+    conn = get_db()
+    try:
+        row = conn.execute("""SELECT qt.*, u.name as creator_name, a.name as approver_name,
+                              ag.name as agency_name
+                              FROM quotations qt
+                              LEFT JOIN users u ON qt.created_by=u.id
+                              LEFT JOIN users a ON qt.approved_by=a.id
+                              LEFT JOIN agencies ag ON qt.agency_id=ag.id
+                              WHERE qt.id=? AND qt.agency_id=?""",
+                           (quotation_id, agency_id)).fetchone()
+        if not row: return None
+        qt = dict(row)
+        qt["items"] = [dict(i) for i in conn.execute(
+            "SELECT * FROM quotation_items WHERE quotation_id=? ORDER BY id", (quotation_id,)).fetchall()]
+        return qt
+    finally:
+        conn.close()
+
+def create_quotation(agency_id, data, items, created_by):
+    conn = get_db()
+    try:
+        c = conn.cursor()
+        num = _next_seq(conn, "quotations", agency_id, "QT")
+        discount_pct = float(data.get("discount_pct", 0))
+        tax_pct = float(data.get("tax_pct", 15))
+        c.execute("""INSERT INTO quotations
+                     (agency_id,quote_number,client_name,client_phone,project_name,
+                      valid_until,notes,terms,discount_pct,tax_pct,created_by)
+                     VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+                  (agency_id, num, data.get("client_name"), data.get("client_phone"),
+                   data.get("project_name"), data.get("valid_until"),
+                   data.get("notes"), data.get("terms"), discount_pct, tax_pct, created_by))
+        qid = c.lastrowid
+        _calc_and_save_items(conn, qid, items, discount_pct, tax_pct)
+        conn.commit()
+        return qid
+    finally:
+        conn.close()
+
+def update_quotation(quotation_id, agency_id, data, items=None):
+    conn = get_db()
+    try:
+        fields = ["client_name","client_phone","project_name","status","valid_until","notes","terms","discount_pct","tax_pct"]
+        sets = ", ".join(f"{f}=?" for f in fields if f in data)
+        vals = [data[f] for f in fields if f in data]
+        if sets:
+            conn.execute(f"UPDATE quotations SET {sets} WHERE id=? AND agency_id=?", vals+[quotation_id,agency_id])
+        if items is not None:
+            row = conn.execute("SELECT discount_pct,tax_pct FROM quotations WHERE id=?",(quotation_id,)).fetchone()
+            dp = float(data.get("discount_pct", dict(row)["discount_pct"] if row else 0))
+            tp = float(data.get("tax_pct", dict(row)["tax_pct"] if row else 15))
+            _calc_and_save_items(conn, quotation_id, items, dp, tp)
+        conn.commit()
+    finally:
+        conn.close()
+
+def approve_quotation(quotation_id, agency_id, approved_by):
+    conn = get_db()
+    try:
+        row = conn.execute("SELECT status FROM quotations WHERE id=? AND agency_id=?",(quotation_id,agency_id)).fetchone()
+        if not row: return False, "عرض السعر غير موجود"
+        if dict(row)["status"] not in ("draft","sent"): return False, "لا يمكن اعتماد هذا العرض بحالته الحالية"
+        conn.execute("UPDATE quotations SET status='approved',approved_by=?,approved_at=datetime('now') WHERE id=? AND agency_id=?",
+                     (approved_by, quotation_id, agency_id))
+        conn.commit()
+        return True, "تم اعتماد عرض السعر"
+    finally:
+        conn.close()
+
+def convert_quotation(quotation_id, agency_id, user_id):
+    conn = get_db()
+    try:
+        qt = conn.execute("SELECT * FROM quotations WHERE id=? AND agency_id=?",(quotation_id,agency_id)).fetchone()
+        if not qt: return False, "عرض السعر غير موجود"
+        qt = dict(qt)
+        if qt["status"] != "approved": return False, "يجب اعتماد عرض السعر أولاً قبل التحويل"
+        num = _next_seq(conn, "sales_orders", agency_id, "SO")
+        conn.execute("""INSERT INTO sales_orders (agency_id,quotation_id,order_number,client_name,client_phone,project_name,total,created_by)
+                        VALUES (?,?,?,?,?,?,?,?)""",
+                     (agency_id, quotation_id, num, qt["client_name"], qt["client_phone"],
+                      qt["project_name"], qt["total"], user_id))
+        conn.execute("UPDATE quotations SET status='converted',converted_at=datetime('now') WHERE id=? AND agency_id=?",
+                     (quotation_id, agency_id))
+        conn.commit()
+        return True, f"تم تحويل عرض السعر إلى أمر بيع رقم {num}"
+    finally:
+        conn.close()
+
+# ── SALES ORDERS ──────────────────────────────────────────────────────────────
+
+def list_sales_orders(agency_id, status=""):
+    conn = get_db()
+    try:
+        q = """SELECT so.*, u.name as creator_name FROM sales_orders so
+               LEFT JOIN users u ON so.created_by=u.id WHERE so.agency_id=?"""
+        params = [agency_id]
+        if status:
+            q += " AND so.status=?"; params.append(status)
+        return [dict(r) for r in conn.execute(q+" ORDER BY so.created_at DESC", params).fetchall()]
+    finally:
+        conn.close()
+
+def update_sales_order(so_id, agency_id, data):
+    conn = get_db()
+    try:
+        fields = ["status","notes"]
+        sets = ", ".join(f"{f}=?" for f in fields if f in data)
+        vals = [data[f] for f in fields if f in data]
+        if sets:
+            conn.execute(f"UPDATE sales_orders SET {sets} WHERE id=? AND agency_id=?", vals+[so_id,agency_id])
+        conn.commit()
+    finally:
+        conn.close()
+
+# ── ACCOUNTING ────────────────────────────────────────────────────────────────
+
+def list_transactions(agency_id, type_filter="", start="", end="", include_archived=False):
+    conn = get_db()
+    try:
+        q = "SELECT t.*, u.name as creator_name FROM transactions t LEFT JOIN users u ON t.created_by=u.id WHERE t.agency_id=?"
+        params = [agency_id]
+        if not include_archived:
+            q += " AND t.status='active'"
+        if type_filter:
+            q += " AND t.type=?"; params.append(type_filter)
+        if start:
+            q += " AND t.date>=?"; params.append(start)
+        if end:
+            q += " AND t.date<=?"; params.append(end)
+        return [dict(r) for r in conn.execute(q+" ORDER BY t.date DESC, t.id DESC", params).fetchall()]
+    finally:
+        conn.close()
+
+def get_accounting_summary(agency_id):
+    conn = get_db()
+    try:
+        month = datetime.now().strftime("%Y-%m")
+        income  = conn.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE agency_id=? AND type='income' AND status='active'",(agency_id,)).fetchone()[0]
+        expense = conn.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE agency_id=? AND type='expense' AND status='active'",(agency_id,)).fetchone()[0]
+        m_income  = conn.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE agency_id=? AND type='income' AND status='active' AND strftime('%Y-%m',date)=?",(agency_id,month)).fetchone()[0]
+        m_expense = conn.execute("SELECT COALESCE(SUM(amount),0) FROM transactions WHERE agency_id=? AND type='expense' AND status='active' AND strftime('%Y-%m',date)=?",(agency_id,month)).fetchone()[0]
+        return {"total_income":income,"total_expense":expense,"net":income-expense,
+                "month_income":m_income,"month_expense":m_expense,"month_net":m_income-m_expense}
+    finally:
+        conn.close()
+
+def create_transaction(agency_id, data, created_by):
+    conn = get_db()
+    try:
+        c = conn.cursor()
+        c.execute("""INSERT INTO transactions (agency_id,type,category,description,amount,reference,date,created_by)
+                     VALUES (?,?,?,?,?,?,?,?)""",
+                  (agency_id, data["type"], data.get("category"), data["description"],
+                   float(data["amount"]), data.get("reference"),
+                   data.get("date", datetime.now().strftime("%Y-%m-%d")), created_by))
+        conn.commit()
+        return c.lastrowid
+    finally:
+        conn.close()
+
+def update_transaction(tx_id, agency_id, data):
+    conn = get_db()
+    try:
+        fields = ["type","category","description","amount","reference","date"]
+        sets = ", ".join(f"{f}=?" for f in fields if f in data)
+        vals = [data[f] for f in fields if f in data]
+        if sets:
+            conn.execute(f"UPDATE transactions SET {sets} WHERE id=? AND agency_id=? AND status='active'", vals+[tx_id,agency_id])
+        conn.commit()
+    finally:
+        conn.close()
+
+def archive_transaction(tx_id, agency_id):
+    conn = get_db()
+    try:
+        conn.execute("UPDATE transactions SET status='archived' WHERE id=? AND agency_id=?", (tx_id, agency_id))
+        conn.commit()
     finally:
         conn.close()
 
