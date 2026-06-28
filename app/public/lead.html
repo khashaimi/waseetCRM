@@ -70,24 +70,19 @@ p{color:#6B7280;font-size:14px;margin-top:6px}
 </div>
 
 <script>
-// Get agency token from URL: /lead.html?agency=XXX
-// For now, submits to the default endpoint
+const AGENCY_ID = new URLSearchParams(window.location.search).get('agency');
+
 async function submitLead(e) {
   e.preventDefault();
   document.getElementById('error').style.display = 'none';
   const fd = new FormData(e.target);
   const data = Object.fromEntries(fd);
-  data.source = 'نموذج الموقع';
-  data.status = 'جديد';
   if (data.budget_max) data.budget_max = parseFloat(data.budget_max);
+  if (AGENCY_ID) data.agency_id = parseInt(AGENCY_ID);
   try {
-    const res = await fetch('/api/contacts', {
+    const res = await fetch('/api/leads', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Use a lead token if agency provides one in URL
-        'Authorization': 'Bearer ' + (new URLSearchParams(window.location.search).get('token') || '')
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
     const result = await res.json();

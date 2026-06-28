@@ -1102,23 +1102,66 @@ async function savePassword(e){
 }
 
 // ── SETTINGS ────────────────────────────────────────────────────────────────
+const PLANS = [
+  {
+    id:'starter',
+    nameAr:'المبدئية',nameEn:'Starter',
+    priceAr:'199 ريال/شهر',priceEn:'SAR 199/mo',
+    featuresAr:['مدير واحد','وسيطان (2)','عملاء غير محدودين','عقارات وصفقات','تذكيرات','دعم واتساب'],
+    featuresEn:['1 Admin','2 Agents','Unlimited clients','Properties & Deals','Follow-ups','WhatsApp support'],
+  },
+  {
+    id:'pro',
+    nameAr:'الاحترافية',nameEn:'Professional',
+    priceAr:'399 ريال/شهر',priceEn:'SAR 399/mo',
+    featuresAr:['مدير واحد','حتى 10 وسطاء','كل مزايا المبدئية','لوحة تحكم الفريق','أولوية الدعم'],
+    featuresEn:['1 Admin','Up to 10 Agents','Everything in Starter','Team dashboard','Priority support'],
+    popular:true,
+  },
+  {
+    id:'enterprise',
+    nameAr:'المؤسسية',nameEn:'Enterprise',
+    priceAr:'799 ريال/شهر',priceEn:'SAR 799/mo',
+    featuresAr:['وسطاء غير محدودين','تخصيص كامل','مدير حساب مخصص','تقارير متقدمة','SLA مضمون'],
+    featuresEn:['Unlimited agents','Full customization','Dedicated account manager','Advanced reports','Guaranteed SLA'],
+  },
+];
+
 function renderSettings(){
   const a=currentAgency,u=currentUser;
   const days=a.trial_ends?Math.ceil((new Date(a.trial_ends)-new Date())/86400000):0;
+  const isActive=p=>a.plan===p.id;
+
   document.getElementById('content').innerHTML=`
-    <div class="page-enter" style="max-width:640px">
+    <div class="page-enter" style="max-width:860px">
+
       <div class="settings-section">
         <div class="plan-card">
-          <div class="plan-name">${a.plan==='trial'?'🔄 '+t('trial'):'✅ '+a.plan}</div>
-          ${a.plan==='trial'?`<div style="font-size:14px;opacity:.8">${days>0?days+' '+t('daysLeft'):t('trialExpired')}</div>`:''}
-          <div style="margin-top:16px">
-            <button class="btn" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)"
-              onclick="showToast('${LANG==='ar'?'سيتم تفعيل الدفع قريباً. تواصل معنا على واتساب.':'Payment coming soon. Contact us on WhatsApp.'}')">
-              ${t('upgradePlan')}
-            </button>
-          </div>
+          <div class="plan-name">${a.plan==='trial'?'🔄 '+(LANG==='ar'?'فترة التجربة':'Free Trial'):'✅ '+a.plan}</div>
+          ${a.plan==='trial'?`<div style="font-size:14px;opacity:.8">${days>0?days+' '+(LANG==='ar'?'يوم متبقي':'days left'):(LANG==='ar'?'انتهت فترة التجربة':'Trial expired')}</div>`
+            :`<div style="font-size:14px;opacity:.8">${LANG==='ar'?'اشتراكك نشط':'Your subscription is active'}</div>`}
         </div>
       </div>
+
+      <div class="settings-section">
+        <h3>${LANG==='ar'?'🚀 اختر خطتك':'🚀 Choose Your Plan'}</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:16px">
+          ${PLANS.map(p=>`
+            <div style="background:var(--card);border-radius:14px;border:2px solid ${isActive(p)?'var(--green)':p.popular?'var(--blue)':'var(--border)'};padding:24px;position:relative;transition:.2s">
+              ${p.popular&&!isActive(p)?`<div style="position:absolute;top:-12px;${LANG==='ar'?'right':'left'}:20px;background:var(--blue);color:#fff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:50px">${LANG==='ar'?'الأكثر شعبية':'Most Popular'}</div>`:''}
+              ${isActive(p)?`<div style="position:absolute;top:-12px;${LANG==='ar'?'right':'left'}:20px;background:var(--green);color:#fff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:50px">✓ ${LANG==='ar'?'خطتك الحالية':'Current Plan'}</div>`:''}
+              <div style="font-size:18px;font-weight:900;color:var(--text);margin-bottom:6px">${LANG==='ar'?p.nameAr:p.nameEn}</div>
+              <div style="font-size:22px;font-weight:900;color:var(--blue);margin-bottom:16px">${LANG==='ar'?p.priceAr:p.priceEn}</div>
+              <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:20px">
+                ${(LANG==='ar'?p.featuresAr:p.featuresEn).map(f=>`<li style="font-size:13px;color:var(--text-2)">✓ ${f}</li>`).join('')}
+              </ul>
+              ${isActive(p)
+                ?`<button class="btn" style="width:100%;background:var(--green-l);color:var(--green);font-weight:700" disabled>${LANG==='ar'?'خطتك الحالية':'Current Plan'}</button>`
+                :`<button class="btn btn-primary" style="width:100%" onclick="startCheckout('${p.id}')">${LANG==='ar'?'اشتراك الآن':'Subscribe Now'}</button>`}
+            </div>`).join('')}
+        </div>
+      </div>
+
       <div class="settings-section">
         <h3>${t('agencyInfo')}</h3>
         <div class="form-grid">
@@ -1126,6 +1169,7 @@ function renderSettings(){
           <div class="form-group"><label>${t('currentPlan')}</label><input value="${a.plan||''}" disabled style="background:var(--bg)"></div>
         </div>
       </div>
+
       <div class="settings-section">
         <h3>${t('support')}</h3>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -1133,16 +1177,27 @@ function renderSettings(){
           <a href="mailto:support@waseetcrm.com" class="btn btn-outline">${t('emailSupport')}</a>
         </div>
       </div>
+
       <div class="settings-section">
         <h3>${t('leadForm')}</h3>
         <p style="font-size:14px;color:var(--text-2);margin-bottom:12px">${t('leadFormHint')}</p>
         <div style="display:flex;gap:8px;align-items:center">
-          <input id="lead-link" value="${window.location.origin}/lead.html" readonly
+          <input id="lead-link" value="${window.location.origin}/lead.html?agency=${a.id}" readonly
             style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text)">
           <button class="btn btn-outline" onclick="navigator.clipboard.writeText(document.getElementById('lead-link').value);showToast(t('copied'))">${t('copy')}</button>
         </div>
       </div>
     </div>`;
+}
+
+async function startCheckout(plan){
+  try{
+    showToast(LANG==='ar'?'جاري التحويل إلى صفحة الدفع...':'Redirecting to payment...','success');
+    const {url}=await api('POST','/checkout',{plan});
+    window.location.href=url;
+  }catch(e){
+    showToast(e.message,'error');
+  }
 }
 
 // ── MODAL ───────────────────────────────────────────────────────────────────
@@ -1190,6 +1245,24 @@ function statusBadge(s){
   const m={'جديد':'badge-blue','متابعة':'badge-orange','مهتم':'badge-green','غير مهتم':'badge-red','مغلق':'badge-gray','متاح':'badge-green','محجوز':'badge-orange','مباع':'badge-gray'};
   return `<span class="badge ${m[s]||'badge-gray'}">${statusLabel(s)||'—'}</span>`;
 }
+
+// ── PAYMENT REDIRECT HANDLING ────────────────────────────────────────────────
+(function checkPaymentRedirect(){
+  const params=new URLSearchParams(window.location.search);
+  const payment=params.get('payment');
+  if(payment==='success'){
+    // Remove query params from URL cleanly
+    window.history.replaceState({},'',window.location.pathname);
+    // Show success after a short delay so the app finishes loading
+    setTimeout(()=>{
+      showToast(LANG==='ar'?'🎉 تم الاشتراك بنجاح! خطتك فعّالة الآن.':'🎉 Subscription successful! Your plan is now active.','success');
+      navigate('settings');
+    },800);
+  } else if(payment==='cancelled'){
+    window.history.replaceState({},'',window.location.pathname);
+    setTimeout(()=>showToast(LANG==='ar'?'تم إلغاء عملية الدفع':'Payment was cancelled'),600);
+  }
+})();
 
 initApp();
 </script>

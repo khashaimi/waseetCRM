@@ -4,15 +4,45 @@ Run: python server.py
 API: http://localhost:8000/api/...
 App: http://localhost:8000/
 """
-import json, os, sys, re, traceback, hmac, hashlib, base64
+import json, os, sys, re, traceback, hmac, hashlib, base64, time
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, urlencode
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 from datetime import datetime, timedelta, timezone
 import database as db
 
 SECRET = os.environ.get("JWT_SECRET", "waseet-secret-change-in-production-2026").encode()
 PORT   = int(os.environ.get("PORT", 8000))
 PUBLIC = os.path.join(os.path.dirname(__file__), "public")
+
+# ── Stripe ────────────────────────────────────────────────────────────────────
+STRIPE_SECRET          = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET  = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+# Set these in Railway env vars after creating prices in Stripe dashboard
+STRIPE_PRICES = {
+    "starter":    os.environ.get("STRIPE_PRICE_STARTER", ""),
+    "pro":        os.environ.get("STRIPE_PRICE_PRO", ""),
+    "enterprise": os.environ.get("STRIPE_PRICE_ENTERPRISE", ""),
+}
+
+def stripe_post(path, data):
+    """Call Stripe API using stdlib only — no requests/stripe-python needed."""
+    req = Request(
+        f"https://api.stripe.com/v1{path}",
+        data=urlencode(data).encode(),
+        headers={
+            "Authorization": f"Bearer {STRIPE_SECRET}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        method="POST",
+    )
+    try:
+        with urlopen(req) as res:
+            return json.loads(res.read()), None
+    except HTTPError as e:
+        err = json.loads(e.read())
+        return None, err.get("error", {}).get("message", "Stripe error")
 
 MIME = {
     ".html": "text/html; charset=utf-8",
@@ -182,6 +212,16 @@ class CRMHandler(BaseHTTPRequestHandler):
                 self.handle_done_followup(int(path.split("/")[-2]))
             elif method == "DELETE" and re.match(r"^/api/followups/\d+$", path):
                 self.handle_delete_followup(int(path.split("/")[-1]))
+
+            # PUBLIC LEAD FORM (no auth required)
+            elif method == "POST" and path == "/api/leads":
+                self.handle_public_lead()
+
+            # PAYMENTS
+            elif method == "POST" and path == "/api/checkout":
+                self.handle_create_checkout()
+            elif method == "POST" and path == "/api/stripe-webhook":
+                self.handle_stripe_webhook()
 
             # PROFILE
             elif method == "PUT" and path == "/api/profile":
@@ -444,6 +484,100 @@ class CRMHandler(BaseHTTPRequestHandler):
             return
         db.delete_followup(followup_id, claims["agency"])
         self.send_json({"message": "تم الحذف"})
+
+    # ── PUBLIC LEAD ──────────────────────────────────────────────────────────
+
+    def handle_public_lead(self):
+        data = self.read_json()
+        agency_id = data.get("agency_id")
+        if not agency_id:
+            return self.send_error_json("معرف الوكالة مطلوب")
+        if not data.get("name") or not data.get("phone"):
+            return self.send_error_json("الاسم والجوال مطلوبان")
+        # Verify the agency exists
+        agency = db.get_agency(int(agency_id))
+        if not agency:
+            return self.send_error_json("الوكالة غير موجودة", 404)
+        data["source"] = "نموذج الموقع"
+        data["status"] = "جديد"
+        cid = db.create_contact(int(agency_id), data)
+        self.send_json({"id": cid, "message": "شكراً! سيتواصل معك الفريق قريباً"}, 201)
+
+    # ── PAYMENTS ─────────────────────────────────────────────────────────────
+
+    def handle_create_checkout(self):
+        claims = self.require_auth()
+        if not claims:
+            return
+        if not STRIPE_SECRET:
+            return self.send_error_json("Stripe not configured", 503)
+        data  = self.read_json()
+        plan  = data.get("plan", "pro")
+        price = STRIPE_PRICES.get(plan)
+        if not price:
+            return self.send_error_json(f"Price ID for '{plan}' not set in env vars", 400)
+
+        # Build absolute base URL from Host header
+        host  = self.headers.get("Origin") or f"https://{self.headers.get('Host','localhost')}"
+        session, err = stripe_post("/checkout/sessions", {
+            "mode": "subscription",
+            "payment_method_types[]": "card",
+            "line_items[0][price]": price,
+            "line_items[0][quantity]": "1",
+            "success_url": f"{host}/app.html?payment=success&plan={plan}",
+            "cancel_url":  f"{host}/app.html?payment=cancelled",
+            "metadata[agency_id]": str(claims["agency"]),
+            "metadata[plan]":      plan,
+        })
+        if err:
+            return self.send_error_json(err, 502)
+        self.send_json({"url": session["url"]})
+
+    def handle_stripe_webhook(self):
+        length  = int(self.headers.get("Content-Length", 0))
+        payload = self.rfile.read(length)
+        sig     = self.headers.get("Stripe-Signature", "")
+
+        # Verify webhook signature (Stripe's v1 scheme)
+        if STRIPE_WEBHOOK_SECRET:
+            try:
+                parts = dict(p.split("=", 1) for p in sig.split(","))
+                ts    = parts.get("t", "0")
+                v1    = parts.get("v1", "")
+                signed = f"{ts}.{payload.decode()}"
+                expected = hmac.new(
+                    STRIPE_WEBHOOK_SECRET.encode(),
+                    signed.encode(), hashlib.sha256
+                ).hexdigest()
+                if not hmac.compare_digest(expected, v1):
+                    return self.send_error_json("Invalid signature", 400)
+                if abs(time.time() - int(ts)) > 300:
+                    return self.send_error_json("Timestamp too old", 400)
+            except Exception:
+                return self.send_error_json("Signature error", 400)
+
+        event = json.loads(payload)
+        etype = event.get("type", "")
+
+        # Activate plan on successful payment
+        if etype in ("checkout.session.completed", "invoice.payment_succeeded"):
+            obj       = event["data"]["object"]
+            meta      = obj.get("metadata") or obj.get("subscription_details", {}).get("metadata", {})
+            agency_id = int(meta.get("agency_id", 0))
+            plan      = meta.get("plan", "pro")
+            if agency_id:
+                db.activate_plan(agency_id, plan)
+                print(f"[Stripe] Plan '{plan}' activated for agency {agency_id}", flush=True)
+
+        # Cancel/downgrade on subscription end
+        elif etype == "customer.subscription.deleted":
+            obj       = event["data"]["object"]
+            meta      = obj.get("metadata", {})
+            agency_id = int(meta.get("agency_id", 0))
+            if agency_id:
+                db.activate_plan(agency_id, "trial")
+
+        self.send_json({"received": True})
 
     # ── PROFILE ──────────────────────────────────────────────────────────────
 
