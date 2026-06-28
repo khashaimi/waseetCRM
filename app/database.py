@@ -248,7 +248,31 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+    migrate_db()
     print(f"✓ Database ready at {DB_PATH}")
+
+def migrate_db():
+    """Add new columns to existing tables without breaking existing data."""
+    conn = get_db()
+    try:
+        migrations = [
+            ("contacts",    "image TEXT"),
+            ("properties",  "image TEXT"),
+            ("stock_items", "image TEXT"),
+            ("contacts",    "company TEXT"),
+            ("contacts",    "city TEXT"),
+            ("deals",       "image TEXT"),
+        ]
+        for table, col_def in migrations:
+            col_name = col_def.split()[0]
+            try:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {col_def}")
+                conn.commit()
+                print(f"[DB] Migrated: {table}.{col_name}", flush=True)
+            except Exception:
+                pass  # Column already exists
+    finally:
+        conn.close()
 
 # ── AUTH ──────────────────────────────────────────────────────────────────────
 
@@ -336,6 +360,26 @@ def get_contact(contact_id, agency_id):
     finally:
         conn.close()
 
+def get_contact_detail(contact_id, agency_id):
+    """Full contact profile: info + deals + quotations + followups."""
+    conn = get_db()
+    try:
+        row = conn.execute("""SELECT c.*, u.name as agent_name FROM contacts c
+                              LEFT JOIN users u ON c.assigned_to=u.id
+                              WHERE c.id=? AND c.agency_id=?""", (contact_id, agency_id)).fetchone()
+        if not row: return None
+        contact = dict(row)
+        contact["deals"] = [dict(r) for r in conn.execute(
+            "SELECT * FROM deals WHERE contact_id=? AND agency_id=? ORDER BY created_at DESC", (contact_id, agency_id)).fetchall()]
+        contact["quotations"] = [dict(r) for r in conn.execute(
+            "SELECT * FROM quotations WHERE client_name=? AND agency_id=? ORDER BY created_at DESC", (contact["name"], agency_id)).fetchall()]
+        contact["followups"] = [dict(r) for r in conn.execute(
+            """SELECT f.*, u.name as agent_name FROM followups f LEFT JOIN users u ON f.assigned_to=u.id
+               WHERE f.contact_id=? AND f.agency_id=? ORDER BY f.due_date DESC""", (contact_id, agency_id)).fetchall()]
+        return contact
+    finally:
+        conn.close()
+
 def create_contact(agency_id, data):
     conn = get_db()
     try:
@@ -356,7 +400,7 @@ def update_contact(contact_id, agency_id, data):
     conn = get_db()
     try:
         fields = ["name","phone","email","source","status","budget_min","budget_max",
-                  "property_type","preferred_area","notes","next_followup","assigned_to","last_contact"]
+                  "property_type","preferred_area","notes","next_followup","assigned_to","last_contact","image","company","city"]
         sets = ", ".join(f"{f}=?" for f in fields if f in data)
         vals = [data[f] for f in fields if f in data]
         if not sets:
@@ -484,7 +528,7 @@ def update_property(prop_id, agency_id, data):
     conn = get_db()
     try:
         fields = ["title","type","price","area","bedrooms","bathrooms","city",
-                  "neighborhood","description","status","listed_by"]
+                  "neighborhood","description","status","listed_by","image"]
         sets = ", ".join(f"{f}=?" for f in fields if f in data)
         vals = [data[f] for f in fields if f in data]
         if not sets:
@@ -674,7 +718,7 @@ def create_stock_item(agency_id, data):
 def update_stock_item(item_id, agency_id, data):
     conn = get_db()
     try:
-        fields = ["name","unit","unit_cost","reorder_point","category","description"]
+        fields = ["name","unit","unit_cost","reorder_point","category","description","image"]
         sets = ", ".join(f"{f}=?" for f in fields if f in data)
         vals = [data[f] for f in fields if f in data]
         if sets:

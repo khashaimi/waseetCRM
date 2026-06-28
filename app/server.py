@@ -176,6 +176,8 @@ class CRMHandler(BaseHTTPRequestHandler):
                 self.handle_list_contacts(qs)
             elif method == "POST" and path == "/api/contacts":
                 self.handle_create_contact()
+            elif method == "GET" and re.match(r"^/api/contacts/\d+/detail$", path):
+                self.handle_get_contact_detail(int(path.split("/")[-2]))
             elif method == "GET" and re.match(r"^/api/contacts/\d+$", path):
                 self.handle_get_contact(int(path.split("/")[-1]))
             elif method == "PUT" and re.match(r"^/api/contacts/\d+$", path):
@@ -384,6 +386,13 @@ class CRMHandler(BaseHTTPRequestHandler):
             offset=int(qs.get("offset",[0])[0])
         )
         self.send_json({"contacts": rows, "total": total})
+
+    def handle_get_contact_detail(self, contact_id):
+        claims = self.require_auth()
+        if not claims: return
+        contact = db.get_contact_detail(contact_id, claims["agency"])
+        if not contact: return self.send_error_json("العميل غير موجود", 404)
+        self.send_json({"contact": contact})
 
     def handle_get_contact(self, contact_id):
         claims = self.require_auth()
