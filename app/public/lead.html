@@ -72,13 +72,23 @@ p{color:#6B7280;font-size:14px;margin-top:6px}
 <script>
 const AGENCY_ID = new URLSearchParams(window.location.search).get('agency');
 
+// If no agency ID in URL, show a clear message instead of a broken form
+if (!AGENCY_ID) {
+  document.getElementById('form-card').innerHTML = `
+    <div style="text-align:center;padding:30px 10px">
+      <div style="font-size:48px;margin-bottom:16px">⚠️</div>
+      <h2 style="font-size:18px;font-weight:900;color:#DC2626;margin-bottom:8px">رابط غير صالح</h2>
+      <p style="color:#6B7280;font-size:14px">يرجى استخدام الرابط الصحيح الذي أرسله لك الوسيط.</p>
+    </div>`;
+}
+
 async function submitLead(e) {
   e.preventDefault();
   document.getElementById('error').style.display = 'none';
   const fd = new FormData(e.target);
   const data = Object.fromEntries(fd);
   if (data.budget_max) data.budget_max = parseFloat(data.budget_max);
-  if (AGENCY_ID) data.agency_id = parseInt(AGENCY_ID);
+  data.agency_id = parseInt(AGENCY_ID);
   try {
     const res = await fetch('/api/leads', {
       method: 'POST',
